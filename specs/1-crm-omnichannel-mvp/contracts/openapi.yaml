@@ -1,0 +1,774 @@
+openapi: 3.1.0
+info:
+  title: CRM Filarmonica API
+  description: API REST para CRM Omnichannel da Sociedade Filarmonica 25 de Marco
+  version: 1.0.0
+  contact:
+    name: Antonio
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development
+  - url: https://crm.filarmonica25.org.br/api
+    description: Production
+
+tags:
+  - name: Auth
+    description: Autenticacao de administradores
+  - name: Dashboard
+    description: Metricas e estatisticas
+  - name: Contacts
+    description: Gestao de contatos
+  - name: Conversations
+    description: Historico de conversas
+  - name: Messages
+    description: Envio e recebimento de mensagens
+  - name: Prospects
+    description: Fichas de interessados
+  - name: Webhooks
+    description: Webhooks de integracao
+
+paths:
+  # ============ AUTH ============
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login do administrador
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login bem-sucedido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: access_token=abc123; HttpOnly; Secure; SameSite=Strict
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout do administrador
+      operationId: logout
+      security:
+        - cookieAuth: []
+      responses:
+        '204':
+          description: Logout bem-sucedido
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Dados do administrador logado
+      operationId: getCurrentAdmin
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Dados do administrador
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admin'
+
+  # ============ DASHBOARD ============
+  /dashboard/stats:
+    get:
+      tags: [Dashboard]
+      summary: Estatisticas gerais do dashboard
+      operationId: getDashboardStats
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Estatisticas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardStats'
+
+  # ============ CONTACTS ============
+  /contacts:
+    get:
+      tags: [Contacts]
+      summary: Listar contatos
+      operationId: listContacts
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: search
+          in: query
+          description: Busca por nome ou telefone
+          schema:
+            type: string
+        - name: origem
+          in: query
+          schema:
+            $ref: '#/components/schemas/Origem'
+        - name: estado_jornada
+          in: query
+          schema:
+            $ref: '#/components/schemas/EstadoJornada'
+      responses:
+        '200':
+          description: Lista de contatos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactListResponse'
+
+  /contacts/{id}:
+    get:
+      tags: [Contacts]
+      summary: Detalhes de um contato
+      operationId: getContact
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ContactId'
+      responses:
+        '200':
+          description: Detalhes do contato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Contacts]
+      summary: Atualizar contato
+      operationId: updateContact
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ContactId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactUpdate'
+      responses:
+        '200':
+          description: Contato atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+
+  # ============ CONVERSATIONS ============
+  /contacts/{id}/conversations:
+    get:
+      tags: [Conversations]
+      summary: Listar conversas de um contato
+      operationId: listContactConversations
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ContactId'
+      responses:
+        '200':
+          description: Lista de conversas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Conversation'
+
+  /conversations:
+    get:
+      tags: [Conversations]
+      summary: Listar todas as conversas ativas
+      operationId: listActiveConversations
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [ativa, encerrada]
+            default: ativa
+      responses:
+        '200':
+          description: Lista de conversas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConversationWithContact'
+
+  /conversations/{id}:
+    get:
+      tags: [Conversations]
+      summary: Detalhes de uma conversa com mensagens
+      operationId: getConversation
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ConversationId'
+      responses:
+        '200':
+          description: Conversa com mensagens
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationDetail'
+
+  # ============ MESSAGES ============
+  /conversations/{id}/messages:
+    get:
+      tags: [Messages]
+      summary: Listar mensagens de uma conversa
+      operationId: listMessages
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ConversationId'
+        - name: before
+          in: query
+          description: Cursor para paginacao (timestamp)
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+      responses:
+        '200':
+          description: Lista de mensagens
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+
+    post:
+      tags: [Messages]
+      summary: Enviar mensagem manual (admin)
+      operationId: sendMessage
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ConversationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '201':
+          description: Mensagem enviada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  # ============ PROSPECTS ============
+  /prospects:
+    get:
+      tags: [Prospects]
+      summary: Listar fichas de interessados
+      operationId: listProspects
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: compativel
+          in: query
+          description: Filtrar por compatibilidade de horario
+          schema:
+            type: boolean
+        - name: instrumento
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de interessados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProspectWithContact'
+
+  /prospects/{id}:
+    get:
+      tags: [Prospects]
+      summary: Ficha detalhada do interessado
+      operationId: getProspect
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Ficha do interessado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProspectDetail'
+
+  # ============ WEBHOOKS ============
+  /webhooks/whatsapp:
+    get:
+      tags: [Webhooks]
+      summary: Verificacao do webhook (challenge)
+      operationId: verifyWebhook
+      parameters:
+        - name: hub.mode
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: hub.verify_token
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: hub.challenge
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Challenge aceito
+          content:
+            text/plain:
+              schema:
+                type: string
+        '403':
+          description: Token invalido
+
+    post:
+      tags: [Webhooks]
+      summary: Receber eventos do WhatsApp
+      operationId: receiveWebhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WhatsAppWebhookPayload'
+      responses:
+        '200':
+          description: Evento recebido
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: access_token
+
+  parameters:
+    ContactId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    ConversationId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    BadRequest:
+      description: Requisicao invalida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Nao autenticado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Recurso nao encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    # ---- Auth ----
+    LoginRequest:
+      type: object
+      required: [email, senha]
+      properties:
+        email:
+          type: string
+          format: email
+          example: antonio@filarmonica25.org.br
+        senha:
+          type: string
+          format: password
+          minLength: 8
+
+    LoginResponse:
+      type: object
+      properties:
+        admin:
+          $ref: '#/components/schemas/Admin'
+        expiresAt:
+          type: string
+          format: date-time
+
+    Admin:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nome:
+          type: string
+          example: Antonio
+        email:
+          type: string
+          format: email
+
+    # ---- Dashboard ----
+    DashboardStats:
+      type: object
+      properties:
+        totalContatos:
+          type: integer
+          example: 150
+        conversasAtivas:
+          type: integer
+          example: 12
+        novosContatosHoje:
+          type: integer
+          example: 5
+        contatosPorOrigem:
+          type: object
+          additionalProperties:
+            type: integer
+          example:
+            organico: 120
+            campanha: 25
+            indicacao: 5
+        contatosPorEstado:
+          type: object
+          additionalProperties:
+            type: integer
+          example:
+            inicial: 30
+            qualificado: 45
+            incompativel: 10
+
+    # ---- Enums ----
+    Origem:
+      type: string
+      enum: [organico, campanha, indicacao]
+
+    TipoContato:
+      type: string
+      enum: [desconhecido, responsavel, interessado_direto]
+
+    EstadoJornada:
+      type: string
+      enum:
+        - inicial
+        - boas_vindas
+        - coletando_nome
+        - coletando_idade
+        - coletando_instrumento
+        - verificando_saxofone
+        - coletando_experiencia
+        - coletando_disponibilidade
+        - incompativel
+        - qualificado
+        - atendimento_humano
+
+    DirecaoMensagem:
+      type: string
+      enum: [entrada, saida]
+
+    TipoMensagem:
+      type: string
+      enum: [texto, automatica, manual]
+
+    # ---- Contacts ----
+    Contact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        telefone:
+          type: string
+          example: '+5511999999999'
+        nome:
+          type: string
+          nullable: true
+          example: Maria Silva
+        tipo:
+          $ref: '#/components/schemas/TipoContato'
+        origem:
+          $ref: '#/components/schemas/Origem'
+        origemCampanha:
+          type: string
+          nullable: true
+        canal:
+          type: string
+          example: whatsapp
+        estadoJornada:
+          $ref: '#/components/schemas/EstadoJornada'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ContactDetail:
+      allOf:
+        - $ref: '#/components/schemas/Contact'
+        - type: object
+          properties:
+            interessado:
+              $ref: '#/components/schemas/Prospect'
+            ultimaConversa:
+              $ref: '#/components/schemas/Conversation'
+
+    ContactUpdate:
+      type: object
+      properties:
+        nome:
+          type: string
+        tipo:
+          $ref: '#/components/schemas/TipoContato'
+        estadoJornada:
+          $ref: '#/components/schemas/EstadoJornada'
+
+    ContactListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contact'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+
+    # ---- Conversations ----
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        contatoId:
+          type: string
+          format: uuid
+        canal:
+          type: string
+        status:
+          type: string
+          enum: [ativa, encerrada]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        closedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    ConversationWithContact:
+      allOf:
+        - $ref: '#/components/schemas/Conversation'
+        - type: object
+          properties:
+            contato:
+              $ref: '#/components/schemas/Contact'
+            ultimaMensagem:
+              $ref: '#/components/schemas/Message'
+
+    ConversationDetail:
+      allOf:
+        - $ref: '#/components/schemas/Conversation'
+        - type: object
+          properties:
+            contato:
+              $ref: '#/components/schemas/Contact'
+            mensagens:
+              type: array
+              items:
+                $ref: '#/components/schemas/Message'
+
+    # ---- Messages ----
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        conversaId:
+          type: string
+          format: uuid
+        direcao:
+          $ref: '#/components/schemas/DirecaoMensagem'
+        conteudo:
+          type: string
+        tipo:
+          $ref: '#/components/schemas/TipoMensagem'
+        enviadoPor:
+          type: string
+          format: uuid
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    SendMessageRequest:
+      type: object
+      required: [conteudo]
+      properties:
+        conteudo:
+          type: string
+          minLength: 1
+          maxLength: 4096
+
+    # ---- Prospects ----
+    Prospect:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        contatoId:
+          type: string
+          format: uuid
+        nome:
+          type: string
+        idade:
+          type: integer
+        instrumentoDesejado:
+          type: string
+        instrumentoSugerido:
+          type: string
+          nullable: true
+        experienciaMusical:
+          type: string
+          nullable: true
+        expectativas:
+          type: string
+          nullable: true
+        disponibilidadeHorario:
+          type: boolean
+        compativel:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    ProspectWithContact:
+      allOf:
+        - $ref: '#/components/schemas/Prospect'
+        - type: object
+          properties:
+            contato:
+              $ref: '#/components/schemas/Contact'
+
+    ProspectDetail:
+      allOf:
+        - $ref: '#/components/schemas/Prospect'
+        - type: object
+          properties:
+            contato:
+              $ref: '#/components/schemas/ContactDetail'
+
+    # ---- Webhooks ----
+    WhatsAppWebhookPayload:
+      type: object
+      properties:
+        object:
+          type: string
+          example: whatsapp_business_account
+        entry:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              changes:
+                type: array
+                items:
+                  type: object
+
+    # ---- Errors ----
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        statusCode:
+          type: integer
