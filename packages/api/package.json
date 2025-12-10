@@ -11,10 +11,14 @@
     "test": "vitest",
     "test:run": "vitest run",
     "lint": "eslint src/",
+    "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:seed": "tsx src/db/seed.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "docker:build": "docker build -f Dockerfile -t crm-api ../.",
+    "docker:up": "docker compose -f ../../docker/docker-compose.yml up -d",
+    "docker:down": "docker compose -f ../../docker/docker-compose.yml down"
   },
   "dependencies": {
     "@fastify/cookie": "^10.0.1",
