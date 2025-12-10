@@ -1,50 +1,124 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+===================
+Version change: 0.0.0 → 1.0.0
+Added principles:
+  - I. Acolhimento em Primeiro Lugar
+  - II. Proprietário e Modular
+  - III. Omnichannel Unificado
+  - IV. Proteção do Maestro
+  - V. Preparado para Crescimento
+Added sections:
+  - Stack Técnica Obrigatória
+  - Fluxo de Desenvolvimento
+Templates requiring updates:
+  - ✅ Constitution created
+  - ⚠ spec-template.md (pending - first run)
+  - ⚠ plan-template.md (pending - first run)
+  - ⚠ tasks-template.md (pending - first run)
+Follow-up TODOs: None
+-->
+
+# CRM Filarmônica Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Acolhimento em Primeiro Lugar
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Toda interação com interessados DEVE ser acolhedora, rápida e humanizada.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+- Respostas automáticas DEVEM ser instantâneas (< 5 segundos)
+- Tom de comunicação DEVE ser sempre gentil e convidativo
+- Mensagens NUNCA podem parecer robóticas ou frias
+- Sistema DEVE proteger a experiência do usuário mesmo quando operadores estão ausentes
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+**Rationale**: A frustração acumulada por desistências afeta o acolhimento. O sistema quebra esse ciclo garantindo respostas sempre positivas.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### II. Proprietário e Modular
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+O sistema DEVE ser construído 100% proprietário, sem dependência de SaaS ou Low-Code.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- PROIBIDO uso de Chatwoot, Botpress, ou similares
+- Stack obrigatória: TypeScript (Node/Bun), PostgreSQL, Docker, Redis
+- Cada módulo DEVE ser independente e testável isoladamente
+- APIs DEVEM seguir padrões RESTful ou GraphQL consistentes
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+**Rationale**: Controle total sobre o código permite customização para necessidades específicas da Filarmônica e evita vendor lock-in.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### III. Omnichannel Unificado
+
+Mensagens de qualquer canal DEVEM ser tratadas de forma unificada internamente.
+
+- WhatsApp, Instagram e Facebook DEVEM convergir para formato único
+- Mesmo contato em canais diferentes DEVE ser identificado e unificado
+- Histórico de conversas DEVE ser consolidado independente do canal
+- Resposta PODE ser enviada por qualquer canal configurado
+
+**Rationale**: O interessado não deve perceber diferença na experiência entre canais.
+
+### IV. Proteção do Maestro
+
+O Maestro NÃO DEVE ser sobrecarregado com atendimento inicial.
+
+- Sistema DEVE qualificar interessados antes de envolver o Maestro
+- Ficha resumo do aluno DEVE ser gerada automaticamente
+- Perguntas frequentes (local, horário) DEVEM ser respondidas sem intervenção humana
+- Maestro DEVE receber apenas contatos qualificados e prontos
+
+**Rationale**: O Maestro deve focar em ensinar, não em responder perguntas repetitivas.
+
+### V. Preparado para Crescimento
+
+O sistema DEVE estar estruturado para suportar campanhas de marketing e métricas desde o MVP.
+
+- Toda entrada DEVE registrar origem (orgânico, campanha, indicação)
+- Conversões DEVEM ser rastreáveis (lead → interessado → aluno)
+- Estrutura DEVE permitir exportação de audiências para Meta Ads
+- Métricas básicas DEVEM estar disponíveis no painel admin
+
+**Rationale**: Investimento futuro em ads requer dados históricos para calcular ROI.
+
+## Stack Técnica Obrigatória
+
+| Camada | Tecnologia | Justificativa |
+|--------|------------|---------------|
+| **Runtime** | Node.js ou Bun | Performance, ecossistema TypeScript |
+| **Linguagem** | TypeScript | Type safety, manutenibilidade |
+| **Banco de Dados** | PostgreSQL | Relacional, robusto, gratuito |
+| **Cache/Filas** | Redis | Performance, pub/sub para mensagens |
+| **Containers** | Docker | Deploy consistente, isolamento |
+| **Integrações** | WhatsApp Business API, Instagram Graph API, Facebook Messenger | Canais prioritários |
+
+### Restrições Tecnológicas
+
+- PROIBIDO: Low-Code, No-Code, SaaS de atendimento
+- PROIBIDO: Banco NoSQL como principal (pode ser complementar)
+- PROIBIDO: Frameworks proprietários que criem lock-in
+
+## Fluxo de Desenvolvimento
+
+### Priorização por Fases
+
+| Fase | Escopo | Critério de Conclusão |
+|------|--------|----------------------|
+| **MVP (P0)** | WhatsApp + Resposta automática + Cadastro + Painel admin | Sistema responde mensagens e registra contatos |
+| **V1 (P1)** | Instagram/Facebook + Qualificação + Métricas | Todos os canais unificados, dashboard funcional |
+| **V2 (P2)** | Engajamento automatizado + Ads + Turmas | Campanhas programadas, gestão de turmas |
+
+### Padrões de Código
+
+- Testes DEVEM existir para toda lógica de negócio crítica
+- Commits DEVEM seguir Conventional Commits
+- PRs DEVEM ter descrição clara do que muda e por quê
+- Documentação inline DEVE existir para funções públicas
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+Esta constituição estabelece os princípios inegociáveis do projeto CRM Filarmônica.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+- Toda decisão técnica DEVE ser validada contra estes princípios
+- Alterações nos princípios REQUEREM documentação, justificativa e aprovação
+- Em caso de conflito, princípios têm precedência sobre conveniência
+- Revisão da constituição: a cada major release ou mudança significativa de escopo
+
+**Version**: 1.0.0 | **Ratified**: 2025-12-09 | **Last Amended**: 2025-12-09

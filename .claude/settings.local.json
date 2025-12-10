@@ -7,7 +7,23 @@
       "Bash(python -m pip:*)",
       "Bash(python -m uv:*)",
       "Bash(export PATH=\"C:\\Users\\cssan\\.local\\bin:$PATH\")",
-      "Bash(export PYTHONIOENCODING=utf-8)"
+      "Bash(export PYTHONIOENCODING=utf-8)",
+      "Bash(git fetch:*)",
+      "Bash(powershell:*)",
+      "SlashCommand(/superpowers:write-plan)",
+      "Skill(superpowers:writing-plans)",
+      "Bash(git rev-parse:*)",
+      "Skill(superpowers:systematic-debugging)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfix(specify): add UTF-8 encoding support for Unicode paths\n\n- Add console encoding configuration for special characters\n- Use -LiteralPath for Test-Path and Get-ChildItem\n- Normalize git output paths with GetFullPath\n\nFixes script failures with folder names containing accented characters.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit -m \"$(cat <<''EOF''\ndocs(specs): add CRM Omnichannel MVP specification\n\nFeature specification documents:\n- spec.md: 5 user stories with acceptance criteria\n- plan.md: technical implementation plan\n- research.md: technology decisions\n- data-model.md: 6 entities with state machine\n- contracts/openapi.yaml: REST API specification\n- quickstart.md: local setup guide\n- tasks.md: 109 implementation tasks\n- checklists/requirements.md: quality validation\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit -m \"$(cat <<''EOF''\nbuild: initialize monorepo with npm workspaces\n\n- Add root package.json with workspace configuration\n- Add docker-compose.yml for PostgreSQL 16 and Redis\n- Add .env.example with all required variables\n- Add .gitignore for Node.js/TypeScript projects\n- Add CLAUDE.md agent context file\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat(shared): add shared types package\n\n- Add TypeScript enums for all domain values\n- Add entity interfaces matching data model\n- Add API request/response types from OpenAPI spec\n- Configure package for ES modules\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit:*)",
+      "Bash(gh --version:*)",
+      "Bash(gh repo create:*)",
+      "Bash(git push:*)"
     ]
   }
 }
