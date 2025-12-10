@@ -1,0 +1,29 @@
+{
+  "name": "crm-filarmonica",
+  "version": "1.0.0",
+  "description": "CRM Omnichannel para Sociedade Filarmonica 25 de Marco",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:api": "npm run dev -w packages/api",
+    "dev:web": "npm run dev -w packages/web",
+    "build": "npm run build --workspaces --if-present",
+    "build:api": "npm run build -w packages/api",
+    "build:web": "npm run build -w packages/web",
+    "test": "npm run test --workspaces --if-present",
+    "test:api": "npm run test -w packages/api",
+    "test:web": "npm run test -w packages/web",
+    "lint": "npm run lint --workspaces --if-present",
+    "db:migrate": "npm run db:migrate -w packages/api",
+    "db:seed": "npm run db:seed -w packages/api",
+    "db:studio": "npm run db:studio -w packages/api"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "author": "Sociedade Filarmonica 25 de Marco",
+  "license": "UNLICENSED"
+}
