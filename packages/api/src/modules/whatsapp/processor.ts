@@ -1,7 +1,7 @@
 import { matchIntent } from '../../lib/intent-matcher.js'
 import { sendWhatsAppMessage } from '../../lib/whatsapp-client.js'
 import { SPAM_PROTECTION_RESPONSE } from '../../lib/templates.js'
-import { findOrCreateContact, parseCampaignCode } from '../contacts/contact.service.js'
+import { findOrCreateContact, parseCampaignCode, contactService } from '../contacts/contact.service.js'
 import { getOrCreateConversation } from '../conversations/conversation.service.js'
 import { saveIncomingMessage, saveOutgoingMessage, isDuplicateMessage } from '../messages/message.service.js'
 import {
@@ -10,6 +10,7 @@ import {
   logMessageSent,
   logIntentDetected,
 } from '../events/event.service.js'
+import { journeyService } from '../journey/journey.service.js'
 import type { IncomingMessageJob } from './message.queue.js'
 
 // Simple in-memory spam tracking (replace with Redis in production)
@@ -109,13 +110,33 @@ export async function processIncomingMessage(
     }
   }
 
+  // Try journey state machine first
+  let responseText = match.response
+  let finalIntent = match.intent
+
+  // Get fresh contact for journey processing
+  const currentContact = await contactService.getById(contact.id)
+
+  if (currentContact) {
+    const journeyResponse = await journeyService.processMessage(
+      currentContact,
+      text || '',
+      match.intent
+    )
+
+    if (journeyResponse) {
+      responseText = journeyResponse.response
+      finalIntent = journeyResponse.newState || match.intent
+    }
+  }
+
   // Send response via WhatsApp
-  const result = await sendWhatsAppMessage(from, match.response)
+  const result = await sendWhatsAppMessage(from, responseText)
 
   // Save outgoing message
   await saveOutgoingMessage({
     conversaId: conversation.id,
-    conteudo: match.response,
+    conteudo: responseText,
     whatsappId: result.messageId,
     tipo: 'automatica',
   })
@@ -128,8 +149,8 @@ export async function processIncomingMessage(
   if (!result.success) {
     return {
       success: false,
-      intent: match.intent,
-      response: match.response,
+      intent: finalIntent,
+      response: responseText,
       error: result.error,
       contactId: contact.id,
       conversationId: conversation.id,
@@ -138,8 +159,8 @@ export async function processIncomingMessage(
 
   return {
     success: true,
-    intent: match.intent,
-    response: match.response,
+    intent: finalIntent,
+    response: responseText,
     messageId: result.messageId,
     contactId: contact.id,
     conversationId: conversation.id,
