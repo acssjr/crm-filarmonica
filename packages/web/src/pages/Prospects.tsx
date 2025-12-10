@@ -64,7 +64,7 @@ export function Prospects() {
           )}
           onClick={() => handleFilterChange(true)}
         >
-          Compativeis
+          Compatíveis
         </button>
         <button
           className={cn(
@@ -73,7 +73,7 @@ export function Prospects() {
           )}
           onClick={() => handleFilterChange(false)}
         >
-          Incompativeis
+          Incompatíveis
         </button>
       </div>
 
@@ -104,7 +104,7 @@ export function Prospects() {
           {data && data.totalPages > 1 && (
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-600">
-                Pagina {data.page} de {data.totalPages}
+                Página {data.page} de {data.totalPages}
               </div>
               <div className="flex gap-2">
                 <button
@@ -119,7 +119,7 @@ export function Prospects() {
                   disabled={data.page >= data.totalPages}
                   onClick={() => handlePageChange(data.page + 1)}
                 >
-                  Proxima
+                  Próxima
                 </button>
               </div>
             </div>
@@ -163,7 +163,7 @@ function ProspectCard({ prospect, onClick }: ProspectCardProps) {
           'badge',
           prospect.compativel ? 'badge-green' : 'badge-red'
         )}>
-          {prospect.compativel ? 'Compativel' : 'Incompativel'}
+          {prospect.compativel ? 'Compatível' : 'Incompatível'}
         </span>
       </div>
 
@@ -190,7 +190,7 @@ function ProspectCard({ prospect, onClick }: ProspectCardProps) {
           <span className={cn(
             prospect.disponibilidadeHorario ? 'text-green-600' : 'text-red-600'
           )}>
-            {prospect.disponibilidadeHorario ? 'Horario disponivel' : 'Horario indisponivel'}
+            {prospect.disponibilidadeHorario ? 'Horário disponível' : 'Horário indisponível'}
           </span>
         </div>
       </div>
@@ -238,7 +238,7 @@ function ProspectDetailModal({ prospect, onClose }: ProspectDetailModalProps) {
                   'badge',
                   prospect.compativel ? 'badge-green' : 'badge-red'
                 )}>
-                  {prospect.compativel ? 'Compativel' : 'Incompativel'}
+                  {prospect.compativel ? 'Compatível' : 'Incompatível'}
                 </span>
               </div>
             </div>
@@ -262,7 +262,7 @@ function ProspectDetailModal({ prospect, onClose }: ProspectDetailModalProps) {
                 'font-medium',
                 prospect.disponibilidadeHorario ? 'text-green-600' : 'text-red-600'
               )}>
-                {prospect.disponibilidadeHorario ? 'Seg/Qua/Sex 15h-17h' : 'Indisponivel'}
+                {prospect.disponibilidadeHorario ? 'Seg/Qua/Sex 15h-17h' : 'Indisponível'}
               </p>
             </div>
             <div>
@@ -273,7 +273,7 @@ function ProspectDetailModal({ prospect, onClose }: ProspectDetailModalProps) {
 
           {prospect.experienciaMusical && (
             <div>
-              <span className="text-sm text-gray-500">Experiencia Musical</span>
+              <span className="text-sm text-gray-500">Experiência Musical</span>
               <p className="mt-1 text-gray-900">{prospect.experienciaMusical}</p>
             </div>
           )}

@@ -77,7 +77,7 @@ export function Conversations() {
             />
           ) : (
             <div className="flex items-center justify-center flex-1">
-              <p className="text-gray-500">Conversa nao encontrada</p>
+              <p className="text-gray-500">Conversa não encontrada</p>
             </div>
           )
         ) : (

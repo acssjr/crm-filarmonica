@@ -28,7 +28,7 @@ export function Dashboard() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Visao geral do CRM</p>
+        <p className="text-gray-600 mt-1">Visão geral do CRM</p>
       </div>
 
       {/* Stats Cards */}
@@ -86,7 +86,7 @@ export function Dashboard() {
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 text-sm">Nenhum dado disponivel</p>
+            <p className="text-gray-500 text-sm">Nenhum dado disponível</p>
           )}
         </div>
 
@@ -115,7 +115,7 @@ export function Dashboard() {
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 text-sm">Nenhum dado disponivel</p>
+            <p className="text-gray-500 text-sm">Nenhum dado disponível</p>
           )}
         </div>
       </div>

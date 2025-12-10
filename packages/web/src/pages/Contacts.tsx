@@ -76,9 +76,9 @@ export function Contacts() {
               onChange={(e) => handleFilterChange('origem', e.target.value)}
             >
               <option value="">Todas</option>
-              <option value="organico">Organico</option>
+              <option value="organico">Orgânico</option>
               <option value="campanha">Campanha</option>
-              <option value="indicacao">Indicacao</option>
+              <option value="indicacao">Indicação</option>
             </select>
           </div>
           <div className="w-48">
@@ -96,7 +96,7 @@ export function Contacts() {
               <option value="coletando_idade">Coletando idade</option>
               <option value="coletando_instrumento">Coletando instrumento</option>
               <option value="qualificado">Qualificado</option>
-              <option value="incompativel">Incompativel</option>
+              <option value="incompativel">Incompatível</option>
               <option value="atendimento_humano">Atendimento humano</option>
             </select>
           </div>
@@ -175,7 +175,7 @@ export function Contacts() {
             {data && data.totalPages > 1 && (
               <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200 bg-gray-50">
                 <div className="text-sm text-gray-600">
-                  Pagina {data.page} de {data.totalPages}
+                  Página {data.page} de {data.totalPages}
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -190,7 +190,7 @@ export function Contacts() {
                     disabled={data.page >= data.totalPages}
                     onClick={() => handlePageChange(data.page + 1)}
                   >
-                    Proxima
+                    Próxima
                   </button>
                 </div>
               </div>
@@ -243,11 +243,11 @@ function ContactDetailDrawer({ contact, onClose }: ContactDetailDrawerProps) {
           ) : (
             <div className="flex-1 overflow-auto p-4 space-y-6">
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Informacoes</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Informações</h3>
                 <div className="space-y-3">
                   <div>
                     <span className="text-sm text-gray-500">Nome</span>
-                    <p className="font-medium">{data?.contato.nome || 'Nao informado'}</p>
+                    <p className="font-medium">{data?.contato.nome || 'Não informado'}</p>
                   </div>
                   <div>
                     <span className="text-sm text-gray-500">Telefone</span>
@@ -305,7 +305,7 @@ function ContactDetailDrawer({ contact, onClose }: ContactDetailDrawerProps) {
                     )}
                     {data.contato.interessado.experienciaMusical && (
                       <div>
-                        <span className="text-sm text-gray-500">Experiencia Musical</span>
+                        <span className="text-sm text-gray-500">Experiência Musical</span>
                         <p className="font-medium">{data.contato.interessado.experienciaMusical}</p>
                       </div>
                     )}
@@ -313,15 +313,15 @@ function ContactDetailDrawer({ contact, onClose }: ContactDetailDrawerProps) {
                       <span className="text-sm text-gray-500">Disponibilidade</span>
                       <p>
                         <span className={cn('badge', data.contato.interessado.disponibilidadeHorario ? 'badge-green' : 'badge-red')}>
-                          {data.contato.interessado.disponibilidadeHorario ? 'Disponivel' : 'Indisponivel'}
+                          {data.contato.interessado.disponibilidadeHorario ? 'Disponível' : 'Indisponível'}
                         </span>
                       </p>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-500">Compativel</span>
+                      <span className="text-sm text-gray-500">Compatível</span>
                       <p>
                         <span className={cn('badge', data.contato.interessado.compativel ? 'badge-green' : 'badge-red')}>
-                          {data.contato.interessado.compativel ? 'Sim' : 'Nao'}
+                          {data.contato.interessado.compativel ? 'Sim' : 'Não'}
                         </span>
                       </p>
                     </div>
