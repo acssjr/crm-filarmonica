@@ -5,6 +5,15 @@ import cookie from '@fastify/cookie'
 import formbody from '@fastify/formbody'
 import { setupErrorHandler } from './plugins/error-handler.js'
 import { setupLogger } from './plugins/logger.js'
+import { webhookRoutes } from './modules/whatsapp/index.js'
+import { authRoutes } from './modules/auth/index.js'
+import { dashboardRoutes } from './modules/dashboard/index.js'
+import { contactRoutes } from './modules/contacts/index.js'
+import { conversationRoutes } from './modules/conversations/index.js'
+import { prospectRoutes } from './modules/prospects/index.js'
+
+// Import workers to start them
+import './workers/index.js'
 
 const PORT = parseInt(process.env.API_PORT || '3000', 10)
 const HOST = process.env.API_HOST || '0.0.0.0'
@@ -50,10 +59,18 @@ async function buildApp() {
 
   // API routes prefix
   app.register(async (api) => {
-    // Routes will be registered here
+    // Root endpoint
     api.get('/', async () => {
       return { message: 'CRM Filarmonica API v1.0.0' }
     })
+
+    // Register all routes
+    await api.register(webhookRoutes)
+    await api.register(authRoutes)
+    await api.register(dashboardRoutes)
+    await api.register(contactRoutes)
+    await api.register(conversationRoutes)
+    await api.register(prospectRoutes)
   }, { prefix: '/api' })
 
   return app
