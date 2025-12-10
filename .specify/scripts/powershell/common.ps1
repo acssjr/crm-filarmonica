@@ -1,16 +1,23 @@
 #!/usr/bin/env pwsh
 # Common PowerShell functions analogous to common.sh
 
+# Fix encoding for paths with Unicode characters (e.g., "ô" in "Filarmônica")
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
 function Get-RepoRoot {
     try {
         $result = git rev-parse --show-toplevel 2>$null
         if ($LASTEXITCODE -eq 0) {
-            return $result
+            # Normalize the path to handle Unicode characters correctly
+            # Git returns forward slashes and may have encoding issues with special chars
+            $normalizedPath = [System.IO.Path]::GetFullPath($result.Trim())
+            return $normalizedPath
         }
     } catch {
         # Git command failed
     }
-    
+
     # Fall back to script location for non-git repos
     return (Resolve-Path (Join-Path $PSScriptRoot "../../..")).Path
 }
@@ -35,7 +42,7 @@ function Get-CurrentBranch {
     $repoRoot = Get-RepoRoot
     $specsDir = Join-Path $repoRoot "specs"
     
-    if (Test-Path $specsDir) {
+    if (Test-Path -LiteralPath $specsDir) {
         $latestFeature = ""
         $highest = 0
         
@@ -115,7 +122,7 @@ function Get-FeaturePathsEnv {
 
 function Test-FileExists {
     param([string]$Path, [string]$Description)
-    if (Test-Path -Path $Path -PathType Leaf) {
+    if (Test-Path -LiteralPath $Path -PathType Leaf) {
         Write-Output "  ✓ $Description"
         return $true
     } else {
@@ -126,7 +133,7 @@ function Test-FileExists {
 
 function Test-DirHasFiles {
     param([string]$Path, [string]$Description)
-    if ((Test-Path -Path $Path -PathType Container) -and (Get-ChildItem -Path $Path -ErrorAction SilentlyContinue | Where-Object { -not $_.PSIsContainer } | Select-Object -First 1)) {
+    if ((Test-Path -LiteralPath $Path -PathType Container) -and (Get-ChildItem -LiteralPath $Path -ErrorAction SilentlyContinue | Where-Object { -not $_.PSIsContainer } | Select-Object -First 1)) {
         Write-Output "  ✓ $Description"
         return $true
     } else {
