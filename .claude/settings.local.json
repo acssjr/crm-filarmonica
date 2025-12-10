@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(specify:*)",
+      "Bash(uv --version:*)",
+      "Bash(pip install:*)",
+      "Bash(python -m pip:*)",
+      "Bash(python -m uv:*)",
+      "Bash(export PATH=\"C:\\Users\\cssan\\.local\\bin:$PATH\")",
+      "Bash(export PYTHONIOENCODING=utf-8)"
+    ]
+  }
+}
