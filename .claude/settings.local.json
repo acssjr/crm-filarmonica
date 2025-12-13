@@ -16,23 +16,16 @@
       "Skill(superpowers:systematic-debugging)",
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nfix(specify): add UTF-8 encoding support for Unicode paths\n\n- Add console encoding configuration for special characters\n- Use -LiteralPath for Test-Path and Get-ChildItem\n- Normalize git output paths with GetFullPath\n\nFixes script failures with folder names containing accented characters.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git commit -m \"$(cat <<''EOF''\ndocs(specs): add CRM Omnichannel MVP specification\n\nFeature specification documents:\n- spec.md: 5 user stories with acceptance criteria\n- plan.md: technical implementation plan\n- research.md: technology decisions\n- data-model.md: 6 entities with state machine\n- contracts/openapi.yaml: REST API specification\n- quickstart.md: local setup guide\n- tasks.md: 109 implementation tasks\n- checklists/requirements.md: quality validation\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git commit -m \"$(cat <<''EOF''\nbuild: initialize monorepo with npm workspaces\n\n- Add root package.json with workspace configuration\n- Add docker-compose.yml for PostgreSQL 16 and Redis\n- Add .env.example with all required variables\n- Add .gitignore for Node.js/TypeScript projects\n- Add CLAUDE.md agent context file\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git commit -m \"$(cat <<''EOF''\nfeat(shared): add shared types package\n\n- Add TypeScript enums for all domain values\n- Add entity interfaces matching data model\n- Add API request/response types from OpenAPI spec\n- Configure package for ES modules\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git commit:*)",
       "Bash(gh --version:*)",
       "Bash(gh repo create:*)",
       "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
       "Bash(npm install:*)",
-      "Bash(powershell -ExecutionPolicy ByPass -c \"irm https://astral.sh/uv/install.ps1 | iex\")",
-      "Bash(export PATH=\"$PATH:$HOME/.local/bin\")",
-      "Bash(uv tool install:*)",
       "Bash(npm run typecheck:*)",
       "Bash(npm run build:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nfeat(web): implement admin panel frontend\n\n- Add React Router with protected routes (main.tsx)\n- Create AuthContext for authentication state\n- Create API client with cookie auth (api.ts)\n- Create Layout with sidebar navigation\n- Implement Login page with form\n- Implement Dashboard with stats cards and charts\n- Implement Contacts page with table, filters, and detail drawer\n- Implement Conversations page with real-time chat UI\n- Implement Prospects page with cards and filters\n- Add utility functions for formatting and labels\n- Configure TailwindCSS with custom components\n\nTasks completed: T060-T076, T091-T093\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git commit -m \"$(cat <<''EOF''\ndocs(specs): add phase 2 specification for shared inbox and media\n\nPhase 2: Atendimento Compartilhado e Mídia\n- spec.md: 5 new user stories (US6-US10)\n  - US6: Real-time shared inbox with assignment\n  - US7: Send/receive media (image, audio, document, location)\n  - US8: 24h window control and WhatsApp templates\n  - US9: LGPD compliance (opt-in, export, anonymization)\n  - US10: Read receipts and push notifications\n\n- tasks.md: 88 new tasks (T110-T197)\n  - Phase 9: Media infrastructure (MinIO/S3)\n  - Phase 10: Media sending from panel\n  - Phase 11: WebSocket real-time updates\n  - Phase 12: Conversation assignment\n  - Phase 13: 24h window and templates\n  - Phase 14: LGPD compliance\n  - Phase 15: Message status and notifications\n\n- data-model.md: Database schema changes\n  - New tables: media_files, templates, push_subscriptions\n  - Modified: contatos (opt_in), conversas (assignment, window)\n  - Modified: mensagens (media fields)\n\nReference: \"Integração WhatsApp API com CRMs 2025\" report\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git commit -m \"$(cat <<''EOF''\nchore: update gitignore and sync local settings\n\n- Add vite.config.js and vite.config.d.ts to gitignore (build artifacts)\n- Sync Claude local settings\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(uv tool install:*)"
     ]
   }
 }
