@@ -1,34 +1,34 @@
 # CRM Filarmonica
 
-CRM + Omnichannel platform for Sociedade Filarmonica 25 de Marco - a 157-year-old music institution in Nazare, BA.
+CRM + Omnichannel platform for Sociedade Filarmonica 25 de Marco - a 157-year-old music institution in Feira de Santana, BA.
 
 ## Tech Stack
 
 - **Backend**: Node.js 20 LTS, Fastify 5, TypeScript 5.7
-- **Database**: PostgreSQL 16 with Drizzle ORM
-- **Queue**: Redis 7 + BullMQ for async processing
-- **Frontend**: React 19, Vite, TailwindCSS (planned)
-- **Infra**: Docker Compose
+- **Database**: PostgreSQL 16 (Supabase) with Drizzle ORM
+- **Queue**: Upstash Redis + BullMQ for async processing
+- **Frontend**: React 19, Vite, TailwindCSS
+- **Auth**: Clerk
 
 ## Project Structure
 
 ```
 packages/
   api/          # Fastify REST API
-  web/          # React SPA (planned)
+  web/          # React SPA
   shared/       # Shared types and enums
-docker/         # Docker Compose files
 specs/          # Feature specifications
 ```
 
 ## Quick Start
 
 ```bash
-# Start databases
-cd docker && docker compose -f docker-compose.dev.yml up -d
-
 # Install dependencies
 npm install
+
+# Configure environment
+cp .env.example .env
+# Fill in Supabase and Upstash credentials
 
 # Run migrations
 npm run db:migrate -w @crm-filarmonica/api
@@ -38,14 +38,18 @@ npm run db:seed -w @crm-filarmonica/api
 
 # Start API in dev mode
 npm run dev -w @crm-filarmonica/api
+
+# Start frontend in dev mode
+npm run dev -w @crm-filarmonica/web
 ```
 
 ## Commands
 
 ```bash
 # Development
-npm run dev -w @crm-filarmonica/api    # Start with hot reload
-npm run build -w @crm-filarmonica/api  # Build for production
+npm run dev -w @crm-filarmonica/api    # Start API with hot reload
+npm run dev -w @crm-filarmonica/web    # Start frontend with hot reload
+npm run build -w @crm-filarmonica/api  # Build API for production
 npm run typecheck -w @crm-filarmonica/api  # Type check
 
 # Database
@@ -57,33 +61,23 @@ npm run db:studio -w @crm-filarmonica/api    # Drizzle Studio
 # Testing
 npm test -w @crm-filarmonica/api       # Run tests in watch mode
 npm run test:run -w @crm-filarmonica/api  # Run tests once
-
-# Docker
-docker compose -f docker/docker-compose.dev.yml up -d   # Dev databases
-docker compose -f docker/docker-compose.yml up -d       # Full stack
 ```
 
 ## Environment Variables
 
 Copy `.env.example` to `.env` and fill in:
 
-- `DATABASE_URL` - PostgreSQL connection string
-- `REDIS_URL` - Redis connection string
-- `JWT_SECRET` - Secret for JWT tokens (min 32 chars)
-- `COOKIE_SECRET` - Secret for cookies (min 32 chars)
+- `DATABASE_URL` - Supabase PostgreSQL connection string
+- `REDIS_URL` - Upstash Redis connection string
 - `WHATSAPP_PHONE_NUMBER_ID` - WhatsApp Business phone number ID
 - `WHATSAPP_ACCESS_TOKEN` - WhatsApp API access token
 - `WHATSAPP_VERIFY_TOKEN` - Webhook verification token
+- `VITE_CLERK_PUBLISHABLE_KEY` - Clerk frontend key
 
 ## API Endpoints
 
 ### Health
 - `GET /health` - Health check
-
-### Auth
-- `POST /api/auth/login` - Login with email/password
-- `POST /api/auth/logout` - Clear session
-- `GET /api/auth/me` - Current user info
 
 ### Dashboard
 - `GET /api/dashboard/stats` - Overview stats

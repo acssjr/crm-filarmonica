@@ -2,28 +2,30 @@
 
 **Branch**: `1-crm-omnichannel-mvp` | **Date**: 2025-12-09
 
-Guia rápido para rodar o projeto localmente e entender a arquitetura.
+Guia rapido para rodar o projeto localmente e entender a arquitetura.
 
-## Pré-requisitos
+## Pre-requisitos
 
 - Node.js 20 LTS
-- Docker e Docker Compose
+- Conta Supabase (PostgreSQL)
+- Conta Upstash (Redis)
+- Conta Clerk (autenticacao)
 - Conta Meta Business (para WhatsApp Business API)
 
 ## Setup Local
 
-### 1. Clonar e instalar dependências
+### 1. Clonar e instalar dependencias
 
 ```bash
-git clone https://github.com/[org]/crm-filarmonica.git
+git clone https://github.com/acssjr/crm-filarmonica.git
 cd crm-filarmonica
 git checkout 1-crm-omnichannel-mvp
 
-# Instalar dependências (usando npm workspaces)
+# Instalar dependencias (usando npm workspaces)
 npm install
 ```
 
-### 2. Configurar variáveis de ambiente
+### 2. Configurar variaveis de ambiente
 
 ```bash
 cp .env.example .env
@@ -32,44 +34,29 @@ cp .env.example .env
 Editar `.env` com suas credenciais:
 
 ```env
-# Database
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/crm_filarmonica
+# Database (Supabase)
+DATABASE_URL=postgresql://postgres:[password]@db.[project].supabase.co:5432/postgres
 
-# Redis
-REDIS_URL=redis://localhost:6379
+# Redis (Upstash)
+REDIS_URL=rediss://default:[password]@[region].upstash.io:6379
 
 # WhatsApp Business API
 WHATSAPP_PHONE_ID=your_phone_id
 WHATSAPP_ACCESS_TOKEN=your_access_token
 WHATSAPP_VERIFY_TOKEN=your_verify_token
-WHATSAPP_WEBHOOK_SECRET=your_webhook_secret
 
-# Auth
-JWT_SECRET=your_jwt_secret_min_32_chars
-JWT_EXPIRES_IN=15m
-REFRESH_TOKEN_EXPIRES_IN=7d
-
-# Frontend
+# Frontend (packages/web/.env)
 VITE_API_URL=http://localhost:3000/api
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
 ```
 
-### 3. Subir infraestrutura
-
-```bash
-# PostgreSQL + Redis
-docker compose up -d postgres redis
-
-# Verificar se estão rodando
-docker compose ps
-```
-
-### 4. Rodar migrations
+### 3. Rodar migrations
 
 ```bash
 npm run db:migrate -w packages/api
 ```
 
-### 5. Seed dos administradores
+### 4. Seed dos administradores
 
 ```bash
 npm run db:seed -w packages/api
@@ -80,7 +67,7 @@ Isso cria os 3 administradores:
 - `isabelle@filarmonica25.org.br` / `admin123`
 - `maestro@filarmonica25.org.br` / `admin123`
 
-### 6. Rodar em desenvolvimento
+### 5. Rodar em desenvolvimento
 
 ```bash
 # Terminal 1: API
@@ -98,7 +85,7 @@ npm run dev -w packages/web
 Para testar o webhook do WhatsApp localmente:
 
 ```bash
-# Instalar ngrok se não tiver
+# Instalar ngrok se nao tiver
 # https://ngrok.com/download
 
 ngrok http 3000
@@ -112,8 +99,8 @@ Copie a URL `https://xxxx.ngrok.io` e configure no Meta Business:
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│  WhatsApp   │────▶│   Webhook   │────▶│ Redis Queue │
-│  Cloud API  │     │  (Fastify)  │     │  (BullMQ)   │
+│  WhatsApp   │────▶│   Webhook   │────▶│   Upstash   │
+│  Cloud API  │     │  (Fastify)  │     │   Redis     │
 └─────────────┘     └─────────────┘     └──────┬──────┘
                                                │
                                                ▼
@@ -124,15 +111,14 @@ Copie a URL `https://xxxx.ngrok.io` e configure no Meta Business:
                            │
                            ▼
                     ┌─────────────┐
+                    │  Supabase   │
                     │ PostgreSQL  │
-                    │ (Contatos,  │
-                    │  Mensagens) │
                     └─────────────┘
                            ▲
                            │
 ┌─────────────┐     ┌─────────────┐
 │   React     │────▶│  REST API   │
-│   (Admin)   │     │  (Fastify)  │
+│ + Clerk     │     │  (Fastify)  │
 └─────────────┘     └─────────────┘
 ```
 
@@ -142,13 +128,13 @@ Copie a URL `https://xxxx.ngrok.io` e configure no Meta Business:
 2. **Webhook responde 200** imediatamente e enfileira no Redis
 3. **Worker processa**:
    - Busca/cria contato pelo telefone
-   - Identifica intenção (keywords)
+   - Identifica intencao (keywords)
    - Atualiza estado da jornada
    - Gera resposta apropriada
 4. **Resposta enviada** via WhatsApp Cloud API
 5. **Mensagens salvas** no PostgreSQL
 
-## Scripts Úteis
+## Scripts Uteis
 
 ```bash
 # Rodar todos os testes
@@ -157,17 +143,11 @@ npm test
 # Testes do backend
 npm test -w packages/api
 
-# Testes e2e do frontend
-npm run test:e2e -w packages/web
-
 # Lint
 npm run lint
 
-# Build de produção
+# Build de producao
 npm run build
-
-# Docker produção
-docker compose -f docker-compose.prod.yml up --build
 ```
 
 ## Estrutura de Pastas
@@ -176,15 +156,15 @@ docker compose -f docker-compose.prod.yml up --build
 packages/
 ├── api/                  # Backend Fastify
 │   ├── src/
-│   │   ├── modules/      # Módulos por domínio
+│   │   ├── modules/      # Modulos por dominio
 │   │   ├── db/           # Schema e migrations
-│   │   └── lib/          # Utilitários
+│   │   └── lib/          # Utilitarios
 │   └── tests/
 │
 ├── web/                  # Frontend React
 │   ├── src/
 │   │   ├── components/   # UI components
-│   │   ├── pages/        # Rotas/páginas
+│   │   ├── pages/        # Rotas/paginas
 │   │   └── services/     # API client
 │   └── tests/
 │
@@ -194,37 +174,24 @@ packages/
 
 ## Troubleshooting
 
-### Webhook não recebe mensagens
+### Webhook nao recebe mensagens
 
-1. Verifique se ngrok está rodando
+1. Verifique se ngrok esta rodando
 2. Confirme URL no Meta Business Console
-3. Cheque logs: `docker compose logs -f api`
+3. Cheque logs do servidor
 
-### Erro de conexão com banco
+### Erro de conexao com banco
 
-```bash
-# Verificar se PostgreSQL está rodando
-docker compose ps
+1. Verifique credenciais do Supabase no `.env`
+2. Confirme que o projeto Supabase esta ativo
+3. Verifique se o IP esta liberado nas configuracoes do Supabase
 
-# Recriar se necessário
-docker compose down
-docker compose up -d postgres
-```
-
-### Mensagens não são enviadas
+### Mensagens nao sao enviadas
 
 1. Verifique `WHATSAPP_ACCESS_TOKEN` no `.env`
-2. Confirme que o número está verificado no Meta Business
+2. Confirme que o numero esta verificado no Meta Business
 3. Cheque rate limits (1000 msg/dia no tier gratuito)
 
-## Próximos Passos
+## Proximos Passos
 
-Após setup funcionando:
-
-1. [ ] Implementar User Story 1 (Resposta Automática)
-2. [ ] Implementar User Story 2 (Cadastro de Contatos)
-3. [ ] Implementar User Story 3 (Painel Admin)
-4. [ ] Implementar User Story 4 (Coleta de Informações)
-5. [ ] Implementar User Story 5 (Verificação de Horário)
-
-Ver [tasks.md](./tasks.md) para o breakdown detalhado.
+Ver [tasks.md](./tasks.md) para o breakdown detalhado das tarefas.
