@@ -7,7 +7,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['src/**/*.test.ts'],
-    exclude: ['node_modules', 'dist'],
+    exclude: ['node_modules', 'dist', 'src/e2e/**'],
     setupFiles: ['./src/__tests__/setup.ts'],
     restoreMocks: true,
 
