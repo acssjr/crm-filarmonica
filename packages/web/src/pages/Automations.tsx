@@ -6,14 +6,14 @@ export function Automations() {
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Automacoes</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Automações</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Configure fluxos automaticos de atendimento
+            Configure fluxos automáticos de atendimento
           </p>
         </div>
         <button className="btn btn-primary">
           <Plus className="w-4 h-4" strokeWidth={1.5} />
-          Nova Automacao
+          Nova Automação
         </button>
       </div>
 
@@ -22,13 +22,13 @@ export function Automations() {
         <div className="empty-state-icon">
           <Workflow className="w-6 h-6" strokeWidth={1.5} />
         </div>
-        <h3 className="empty-state-title">Nenhuma automacao configurada</h3>
+        <h3 className="empty-state-title">Nenhuma automação configurada</h3>
         <p className="empty-state-description">
-          Crie automacoes para responder seus contatos automaticamente
+          Crie automações para responder seus contatos automaticamente
         </p>
         <button className="btn btn-primary mt-4">
           <Plus className="w-4 h-4" strokeWidth={1.5} />
-          Criar Automacao
+          Criar Automação
         </button>
       </div>
     </div>

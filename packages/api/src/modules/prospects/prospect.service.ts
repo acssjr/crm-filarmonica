@@ -1,7 +1,6 @@
 import { db } from '../../db/index.js'
-import { interessados, contatos } from '../../db/schema.js'
+import { interessados, contatos, type Interessado, type NewInteressado } from '../../db/schema.js'
 import { eq } from 'drizzle-orm'
-import type { Interessado, NovoInteressado } from '@crm-filarmonica/shared'
 
 export class ProspectService {
   /**
@@ -25,15 +24,16 @@ export class ProspectService {
       return null
     }
 
-    const prospect: NovoInteressado = {
+    const prospect: NewInteressado = {
       contatoId: contactId,
       nome: contact.nome || 'Não informado',
-      telefone: contact.telefone,
-      instrumentoDesejado: data.instrumento || null,
-      experiencia: data.experiencia || null,
-      disponibilidade: data.diasDisponiveis || [],
-      status: 'novo',
-      notas: data.notas || null,
+      idade: 0, // Will be updated during journey if collected
+      instrumentoDesejado: data.instrumento || 'Não informado',
+      instrumentoSugerido: null,
+      experienciaMusical: data.experiencia || null,
+      expectativas: data.notas || null,
+      disponibilidadeHorario: data.diasDisponiveis ? data.diasDisponiveis.length > 0 : false,
+      compativel: true,
     }
 
     const [created] = await db.insert(interessados).values(prospect).returning()
@@ -42,25 +42,15 @@ export class ProspectService {
   }
 
   /**
-   * Update prospect status
+   * Update prospect compatibility
    */
-  async updateStatus(
+  async updateCompatibility(
     prospectId: string,
-    status: Interessado['status'],
-    notas?: string
+    compativel: boolean
   ): Promise<Interessado | null> {
-    const updates: Partial<Interessado> = {
-      status,
-      atualizadoEm: new Date(),
-    }
-
-    if (notas) {
-      updates.notas = notas
-    }
-
     const [updated] = await db
       .update(interessados)
-      .set(updates)
+      .set({ compativel })
       .where(eq(interessados.id, prospectId))
       .returning()
 

@@ -1,4 +1,4 @@
-import { eq, desc, lt, sql } from 'drizzle-orm'
+import { eq, desc, lt, and } from 'drizzle-orm'
 import { db } from '../../db/index.js'
 import { mensagens, type Mensagem, type NewMensagem } from '../../db/schema.js'
 
@@ -40,20 +40,14 @@ export interface ListMessagesParams {
 export async function listMessages(params: ListMessagesParams): Promise<Mensagem[]> {
   const { conversaId, before, limit = 50 } = params
 
-  let query = db
+  const conditions = before
+    ? and(eq(mensagens.conversaId, conversaId), lt(mensagens.createdAt, before))
+    : eq(mensagens.conversaId, conversaId)
+
+  return db
     .select()
     .from(mensagens)
-    .where(eq(mensagens.conversaId, conversaId))
-
-  if (before) {
-    query = db
-      .select()
-      .from(mensagens)
-      .where(eq(mensagens.conversaId, conversaId))
-      .where(lt(mensagens.createdAt, before))
-  }
-
-  return query
+    .where(conditions)
     .orderBy(desc(mensagens.createdAt))
     .limit(limit)
 }

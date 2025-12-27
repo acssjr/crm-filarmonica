@@ -1,10 +1,11 @@
 import type { IntentId } from './intents.js'
+import { institution } from '../config/institution.js'
 
-// Filarmonica info
-const ENDERECO = 'Praca da Bandeira, 25 - Centro, Nazare - BA'
-const GOOGLE_MAPS = 'https://maps.google.com/?q=Praca+da+Bandeira+25+Nazare+BA'
-const HORARIOS = 'Segunda, Quarta e Sexta, das 15h as 17h'
-const HISTORIA = '157 anos de tradicao musical'
+// Use centralized institution configuration
+const ENDERECO = institution.address
+const GOOGLE_MAPS = institution.googleMapsUrl
+const HORARIOS = institution.schedule.displayFormat
+const HISTORIA = institution.history
 
 export const TEMPLATES: Record<IntentId, string> = {
   saudacao: `Ola! Bem-vindo(a) a Sociedade Filarmonica 25 de Marco! 🎵

@@ -57,8 +57,8 @@ Voce ja tocou algum instrumento antes?
   return {
     response: `${experienceLevel === 'iniciante' ? 'Otimo! Todos sao bem-vindos, iniciantes ou experientes! 🎵' : 'Que legal! Sua experiencia vai ajudar muito! 🎵'}
 
-${STATE_PROMPTS.verificando_disponibilidade}`,
-    nextState: 'verificando_disponibilidade',
+${STATE_PROMPTS.coletando_disponibilidade}`,
+    nextState: 'coletando_disponibilidade',
     data: {
       experiencia: experienceLevel,
       detalhesExperiencia: experienceDetails,

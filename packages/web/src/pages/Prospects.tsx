@@ -91,14 +91,14 @@ export function Prospects() {
           onClick={() => handleFilterChange(true)}
         >
           <CheckCircle className="w-3.5 h-3.5" strokeWidth={1.5} />
-          Compativeis
+          Compatíveis
         </button>
         <button
           className={cn('filter-chip', params.compativel === false && 'active')}
           onClick={() => handleFilterChange(false)}
         >
           <XCircle className="w-3.5 h-3.5" strokeWidth={1.5} />
-          Incompativeis
+          Incompatíveis
         </button>
       </div>
 
@@ -135,7 +135,7 @@ export function Prospects() {
           {data && data.totalPages > 1 && (
             <div className="flex items-center justify-between pt-4">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Pagina <span className="font-semibold text-gray-900 dark:text-white">{data.page}</span> de{' '}
+                Página <span className="font-semibold text-gray-900 dark:text-white">{data.page}</span> de{' '}
                 <span className="font-semibold text-gray-900 dark:text-white">{data.totalPages}</span>
               </p>
               <div className="pagination">
@@ -152,7 +152,7 @@ export function Prospects() {
                   disabled={data.page >= data.totalPages}
                   onClick={() => handlePageChange(data.page + 1)}
                 >
-                  Proxima
+                  Próxima
                   <ChevronRight className="w-4 h-4" strokeWidth={1.5} />
                 </button>
               </div>
@@ -199,7 +199,7 @@ function ProspectCard({ prospect, onClick }: ProspectCardProps) {
           'badge badge-dot',
           prospect.compativel ? 'badge-success' : 'badge-error'
         )}>
-          {prospect.compativel ? 'Compativel' : 'Incompativel'}
+          {prospect.compativel ? 'Compatível' : 'Incompatível'}
         </span>
       </div>
 
@@ -234,7 +234,7 @@ function ProspectCard({ prospect, onClick }: ProspectCardProps) {
               ? 'text-success-600 dark:text-success-400'
               : 'text-error-600 dark:text-error-400'
           )}>
-            {prospect.disponibilidadeHorario ? 'Horario disponivel' : 'Horario indisponivel'}
+            {prospect.disponibilidadeHorario ? 'Horário disponível' : 'Horário indisponível'}
           </span>
         </div>
       </div>
@@ -293,7 +293,7 @@ function ProspectDetailModal({ prospect, onClose }: ProspectDetailModalProps) {
                     'w-1.5 h-1.5 rounded-full',
                     prospect.compativel ? 'bg-success-400' : 'bg-error-400'
                   )} />
-                  {prospect.compativel ? 'Compativel' : 'Incompativel'}
+                  {prospect.compativel ? 'Compatível' : 'Incompatível'}
                 </span>
               </div>
             </div>
@@ -313,7 +313,7 @@ function ProspectDetailModal({ prospect, onClose }: ProspectDetailModalProps) {
                 <p className="font-semibold text-gray-900 dark:text-white">{prospect.instrumentoDesejado}</p>
                 {prospect.instrumentoSugerido && prospect.instrumentoSugerido !== prospect.instrumentoDesejado && (
                   <p className="text-sm text-primary-600 dark:text-primary-400 font-medium">
-                    Sugestao: {prospect.instrumentoSugerido}
+                    Sugestão: {prospect.instrumentoSugerido}
                   </p>
                 )}
               </div>
@@ -325,7 +325,7 @@ function ProspectDetailModal({ prospect, onClose }: ProspectDetailModalProps) {
             <InfoCard
               icon={Clock}
               label="Disponibilidade"
-              value={prospect.disponibilidadeHorario ? 'Seg/Qua/Sex 15h-17h' : 'Indisponivel'}
+              value={prospect.disponibilidadeHorario ? 'Seg/Qua/Sex 15h-17h' : 'Indisponível'}
               variant={prospect.disponibilidadeHorario ? 'success' : 'danger'}
             />
             <InfoCard
@@ -337,7 +337,7 @@ function ProspectDetailModal({ prospect, onClose }: ProspectDetailModalProps) {
 
           {prospect.experienciaMusical && (
             <div>
-              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Experiencia Musical</p>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Experiência Musical</p>
               <p className="text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">{prospect.experienciaMusical}</p>
             </div>
           )}

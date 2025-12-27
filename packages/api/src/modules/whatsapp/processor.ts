@@ -1,6 +1,7 @@
 import { matchIntent } from '../../lib/intent-matcher.js'
 import { sendWhatsAppMessage } from '../../lib/whatsapp-client.js'
 import { SPAM_PROTECTION_RESPONSE } from '../../lib/templates.js'
+import { spamProtection } from '../../lib/spam-protection.js'
 import { findOrCreateContact, parseCampaignCode, contactService } from '../contacts/contact.service.js'
 import { getOrCreateConversation } from '../conversations/conversation.service.js'
 import { saveIncomingMessage, saveOutgoingMessage, isDuplicateMessage } from '../messages/message.service.js'
@@ -12,29 +13,6 @@ import {
 } from '../events/event.service.js'
 import { journeyService } from '../journey/journey.service.js'
 import type { IncomingMessageJob } from './message.queue.js'
-
-// Simple in-memory spam tracking (replace with Redis in production)
-const spamTracker = new Map<string, { count: number; lastReset: number }>()
-const SPAM_THRESHOLD = 3
-const SPAM_WINDOW_MS = 60 * 1000 // 1 minute
-
-function checkSpamProtection(from: string, hasContext: boolean): boolean {
-  const now = Date.now()
-  const tracker = spamTracker.get(from)
-
-  if (!tracker || now - tracker.lastReset > SPAM_WINDOW_MS) {
-    spamTracker.set(from, { count: hasContext ? 0 : 1, lastReset: now })
-    return false
-  }
-
-  if (hasContext) {
-    tracker.count = 0
-    return false
-  }
-
-  tracker.count++
-  return tracker.count >= SPAM_THRESHOLD
-}
 
 export interface ProcessResult {
   success: boolean
@@ -94,12 +72,12 @@ export async function processIncomingMessage(
   // Log intent detected
   await logIntentDetected(contact.id, match.intent, match.confidence)
 
-  // Check for spam (contextless messages)
+  // Check for spam (contextless messages) - now using Redis
   const hasContext = match.confidence !== 'low'
-  const isSpam = checkSpamProtection(from, hasContext)
+  const spamCheck = await spamProtection.check(from, hasContext)
 
-  if (isSpam) {
-    console.log(`[Processor] Spam protection triggered for ${from}`)
+  if (spamCheck.isSpam) {
+    console.log(`[Processor] Spam protection triggered for ${from} (${spamCheck.count} messages)`)
     return {
       success: true,
       intent: 'spam_blocked',
@@ -112,7 +90,7 @@ export async function processIncomingMessage(
 
   // Try journey state machine first
   let responseText = match.response
-  let finalIntent = match.intent
+  let finalIntent: string = match.intent
 
   // Get fresh contact for journey processing
   const currentContact = await contactService.getById(contact.id)

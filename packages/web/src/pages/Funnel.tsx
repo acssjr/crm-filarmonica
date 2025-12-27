@@ -24,7 +24,7 @@ export function Funnel() {
         </div>
         <h3 className="empty-state-title">Funil em breve</h3>
         <p className="empty-state-description">
-          Em breve voce podera visualizar e gerenciar seu funil de vendas aqui
+          Em breve você poderá visualizar e gerenciar seu funil de vendas aqui
         </p>
       </div>
     </div>

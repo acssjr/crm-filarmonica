@@ -1,14 +1,15 @@
 import { Queue, Worker, Job } from 'bullmq'
-import IORedis from 'ioredis'
+import { Redis } from 'ioredis'
+import { config } from '../config/index.js'
 
-const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379'
+const REDIS_URL = config.redis.url || 'redis://localhost:6379'
 
-export const redisConnection = new IORedis(REDIS_URL, {
+export const redisConnection = new Redis(REDIS_URL, {
   maxRetriesPerRequest: null,
 })
 
 // Queue names
-export const WHATSAPP_INCOMING_QUEUE = 'whatsapp:incoming'
+export const WHATSAPP_INCOMING_QUEUE = 'whatsapp-incoming'
 
 // Create a queue
 export function createQueue(name: string): Queue {

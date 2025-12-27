@@ -85,7 +85,7 @@ Estamos muito felizes em recebe-lo(a) na Filarmonica!
 Pode aparecer em qualquer um desses dias para conhecer a turma e comecar!
 
 Sera um prazer te receber! 🎵🎺`,
-      nextState: 'cadastro_completo',
+      nextState: 'qualificado',
       data: {
         diasDisponiveis: availableDays.length > 0 ? availableDays : SCHEDULE.days,
       },

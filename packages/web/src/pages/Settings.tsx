@@ -4,10 +4,10 @@ import { useState } from 'react'
 
 const settingsSections = [
   { id: 'general', name: 'Geral', icon: SettingsIcon },
-  { id: 'notifications', name: 'Notificacoes', icon: Bell },
-  { id: 'security', name: 'Seguranca', icon: Lock },
-  { id: 'appearance', name: 'Aparencia', icon: Palette },
-  { id: 'integrations', name: 'Integracoes', icon: Webhook },
+  { id: 'notifications', name: 'Notificações', icon: Bell },
+  { id: 'security', name: 'Segurança', icon: Lock },
+  { id: 'appearance', name: 'Aparência', icon: Palette },
+  { id: 'integrations', name: 'Integrações', icon: Webhook },
   { id: 'language', name: 'Idioma', icon: Globe },
 ]
 
@@ -18,7 +18,7 @@ export function Settings() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Configuracoes</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Configurações</h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">
           Personalize seu CRM
         </p>
@@ -57,7 +57,7 @@ export function Settings() {
                 {settingsSections.find((s) => s.id === activeSection)?.name}
               </h2>
               <p className="card-description">
-                Configuracoes de {settingsSections.find((s) => s.id === activeSection)?.name.toLowerCase()}
+                Configurações de {settingsSections.find((s) => s.id === activeSection)?.name.toLowerCase()}
               </p>
             </div>
 
@@ -67,7 +67,7 @@ export function Settings() {
               </div>
               <h3 className="empty-state-title">Em breve</h3>
               <p className="empty-state-description">
-                Esta secao de configuracoes estara disponivel em breve
+                Esta seção de configurações estará disponível em breve
               </p>
             </div>
           </div>

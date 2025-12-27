@@ -5,7 +5,7 @@ import {
   listMessages as listMessagesRepo,
   type ListMessagesParams,
 } from './message.repository.js'
-import type { Mensagem, NewMensagem } from '../../db/schema.js'
+import type { Mensagem } from '../../db/schema.js'
 
 export interface SaveIncomingMessageParams {
   conversaId: string
@@ -60,7 +60,7 @@ export async function saveOutgoingMessage(
 
 export async function markMessageAsSent(
   id: string,
-  whatsappId: string
+  _whatsappId: string
 ): Promise<void> {
   await updateMessageStatus(id, 'enviada')
 }
