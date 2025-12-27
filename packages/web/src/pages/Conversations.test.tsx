@@ -2,7 +2,7 @@
  * Unit tests for Conversations component
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { screen, waitFor, within } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Conversations } from './Conversations'
 import {
@@ -68,6 +68,8 @@ describe('Conversations', () => {
   const mockConversationDetail = {
     conversa: {
       id: 'conv-1',
+      contatoId: 'contact-1',
+      canal: 'whatsapp',
       contato: mockContato({ id: 'contact-1', nome: 'John Doe', telefone: '5575999999999' }),
       mensagens: [
         mockMensagem({ id: 'msg-1', direcao: 'entrada', conteudo: 'Hello', createdAt: '2024-01-01T10:00:00Z' }),
@@ -76,6 +78,8 @@ describe('Conversations', () => {
       ],
       status: 'ativa',
       createdAt: '2024-01-01T10:00:00Z',
+      updatedAt: '2024-01-01T12:00:00Z',
+      closedAt: null,
     },
   }
 
