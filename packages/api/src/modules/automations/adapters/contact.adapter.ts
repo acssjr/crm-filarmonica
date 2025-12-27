@@ -5,11 +5,14 @@
 
 import { eq, sql, and, lte } from 'drizzle-orm'
 import { db } from '../../../db/index.js'
-import { contatos, interessados, contatoTags, tags, mensagens, conversas } from '../../../db/schema.js'
-import { ContactPortPort, ContactDetails } from '../domain/ports/contact.port.js'
+import { contatos, interessados, contatoTags, tags, mensagens, conversas, estadoJornadaEnum } from '../../../db/schema.js'
+
+// Valid journey states from the enum
+const VALID_JOURNEY_STATES = new Set(estadoJornadaEnum.enumValues)
+import { ContactPort, ContactDetails } from '../domain/ports/contact.port.js'
 import { ContactData } from '../domain/value-objects/condition.vo.js'
 
-export class ContactAdapter implements ContactPortPort {
+export class ContactAdapter implements ContactPort {
   async findById(id: string): Promise<ContactDetails | null> {
     const rows = await db.select().from(contatos).where(eq(contatos.id, id)).limit(1)
     if (!rows[0]) return null
@@ -112,9 +115,20 @@ export class ContactAdapter implements ContactPortPort {
     estado: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
+      // Validate estado against the enum values
+      if (!VALID_JOURNEY_STATES.has(estado as typeof estadoJornadaEnum.enumValues[number])) {
+        return {
+          success: false,
+          error: `Estado de jornada inválido: ${estado}. Valores válidos: ${[...VALID_JOURNEY_STATES].join(', ')}`,
+        }
+      }
+
       await db
         .update(contatos)
-        .set({ estadoJornada: estado as any, updatedAt: new Date() })
+        .set({
+          estadoJornada: estado as typeof estadoJornadaEnum.enumValues[number],
+          updatedAt: new Date(),
+        })
         .where(eq(contatos.id, contatoId))
       return { success: true }
     } catch (error) {
@@ -123,11 +137,15 @@ export class ContactAdapter implements ContactPortPort {
     }
   }
 
-  async findContactsWithoutInteraction(days: number): Promise<string[]> {
+  async findContactsWithoutInteraction(
+    days: number,
+    limit: number = 100,
+    offset: number = 0
+  ): Promise<string[]> {
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - days)
 
-    // Find contacts whose last message is older than cutoff
+    // Find contacts whose last message is older than cutoff (with pagination)
     const result = await db
       .select({
         contatoId: conversas.contatoId,
@@ -138,6 +156,8 @@ export class ContactAdapter implements ContactPortPort {
       .where(eq(conversas.status, 'ativa'))
       .groupBy(conversas.contatoId)
       .having(lte(sql`max(${mensagens.createdAt})`, cutoffDate))
+      .limit(limit)
+      .offset(offset)
 
     return result.map(r => r.contatoId)
   }

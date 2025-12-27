@@ -7,12 +7,16 @@ import { EventPublisherPort } from '../domain/ports/event-publisher.port.js'
 import { AutomationEvent } from '../domain/events/automation.events.js'
 
 type EventHandler = (event: AutomationEvent) => Promise<void>
+type UnsubscribeFn = () => void
 
 export class EventPublisherAdapter implements EventPublisherPort {
-  private handlers: Map<AutomationEvent['eventType'], EventHandler[]> = new Map()
+  private handlers: Map<AutomationEvent['eventType'], Set<EventHandler>> = new Map()
 
   async publish(event: AutomationEvent): Promise<void> {
-    const handlers = this.handlers.get(event.eventType) || []
+    const handlers = this.handlers.get(event.eventType)
+    if (!handlers || handlers.size === 0) {
+      return
+    }
 
     console.log(`[EventPublisher] Publishing ${event.eventType}:`, event.payload)
 
@@ -25,14 +29,34 @@ export class EventPublisherAdapter implements EventPublisherPort {
     }
   }
 
+  /**
+   * Subscribe to an event type
+   * @returns Unsubscribe function to remove the handler
+   */
   subscribe(
     eventType: AutomationEvent['eventType'],
     handler: EventHandler
-  ): void {
-    const existing = this.handlers.get(eventType) || []
-    existing.push(handler)
-    this.handlers.set(eventType, existing)
+  ): UnsubscribeFn {
+    let handlers = this.handlers.get(eventType)
+    if (!handlers) {
+      handlers = new Set()
+      this.handlers.set(eventType, handlers)
+    }
+    handlers.add(handler)
     console.log(`[EventPublisher] Subscribed handler for ${eventType}`)
+
+    // Return unsubscribe function
+    return () => {
+      handlers!.delete(handler)
+      console.log(`[EventPublisher] Unsubscribed handler for ${eventType}`)
+    }
+  }
+
+  /**
+   * Clear all handlers (useful for testing)
+   */
+  clear(): void {
+    this.handlers.clear()
   }
 }
 

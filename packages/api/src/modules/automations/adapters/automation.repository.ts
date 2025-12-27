@@ -3,7 +3,7 @@
  * Concrete implementation of AutomationRepositoryPort using Drizzle
  */
 
-import { eq, and } from 'drizzle-orm'
+import { eq, and, gte } from 'drizzle-orm'
 import { db } from '../../../db/index.js'
 import { automacoes, automacaoExecucoes } from '../../../db/schema.js'
 import { Automation } from '../domain/entities/automation.entity.js'
@@ -76,27 +76,10 @@ export class AutomationRepository implements AutomationRepositoryPort {
   async save(automation: Automation): Promise<void> {
     const data = automation.toPersistence()
 
-    const existing = await db
-      .select({ id: automacoes.id })
-      .from(automacoes)
-      .where(eq(automacoes.id, data.id))
-      .limit(1)
-
-    if (existing.length > 0) {
-      await db
-        .update(automacoes)
-        .set({
-          nome: data.nome,
-          ativo: data.ativo,
-          triggerTipo: data.triggerTipo,
-          triggerConfig: data.triggerConfig,
-          condicoes: data.condicoes,
-          acoes: data.acoes,
-          updatedAt: data.updatedAt,
-        })
-        .where(eq(automacoes.id, data.id))
-    } else {
-      await db.insert(automacoes).values({
+    // Use upsert pattern with ON CONFLICT to prevent race conditions
+    await db
+      .insert(automacoes)
+      .values({
         id: data.id,
         nome: data.nome,
         ativo: data.ativo,
@@ -107,7 +90,18 @@ export class AutomationRepository implements AutomationRepositoryPort {
         createdAt: data.createdAt,
         updatedAt: data.updatedAt,
       })
-    }
+      .onConflictDoUpdate({
+        target: automacoes.id,
+        set: {
+          nome: data.nome,
+          ativo: data.ativo,
+          triggerTipo: data.triggerTipo,
+          triggerConfig: data.triggerConfig,
+          condicoes: data.condicoes,
+          acoes: data.acoes,
+          updatedAt: data.updatedAt,
+        },
+      })
   }
 
   async delete(id: string): Promise<boolean> {
@@ -175,6 +169,29 @@ export class AutomationRepository implements AutomationRepositoryPort {
       .returning()
 
     return row ? mapExecutionFromDb(row) : null
+  }
+
+  async hasRecentExecution(
+    automacaoId: string,
+    contatoId: string,
+    windowMinutes: number = 60
+  ): Promise<boolean> {
+    const cutoff = new Date()
+    cutoff.setMinutes(cutoff.getMinutes() - windowMinutes)
+
+    const rows = await db
+      .select({ id: automacaoExecucoes.id })
+      .from(automacaoExecucoes)
+      .where(
+        and(
+          eq(automacaoExecucoes.automacaoId, automacaoId),
+          eq(automacaoExecucoes.contatoId, contatoId),
+          gte(automacaoExecucoes.createdAt, cutoff)
+        )
+      )
+      .limit(1)
+
+    return rows.length > 0
   }
 }
 
