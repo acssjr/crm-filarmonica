@@ -8,6 +8,7 @@
   ![Fastify](https://img.shields.io/badge/Fastify-5-000000?logo=fastify&logoColor=white)
   ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4-06B6D4?logo=tailwindcss&logoColor=white)
   ![License](https://img.shields.io/badge/License-Private-red)
+  ![Version](https://img.shields.io/badge/version-0.3.0-green)
 </div>
 
 ---
@@ -66,23 +67,41 @@ Types e utilitários TypeScript compartilhados entre packages.
 ```
 crm-filarmonica/
 ├── packages/
-│   ├── api/          # Backend Fastify
+│   ├── api/                    # Backend Fastify
 │   │   ├── src/
-│   │   │   ├── db/        # Drizzle ORM schemas e migrations
-│   │   │   ├── routes/    # Rotas da API
-│   │   │   └── server.ts  # Entry point
+│   │   │   ├── adapters/       # Adaptadores de canal (WhatsApp, etc)
+│   │   │   ├── config/         # Configurações da instituição
+│   │   │   ├── db/             # Drizzle ORM schemas
+│   │   │   ├── lib/            # Utilitários (queue, templates, spam)
+│   │   │   ├── modules/
+│   │   │   │   ├── auth/       # Autenticação Clerk
+│   │   │   │   ├── campaigns/  # Campanhas de marketing
+│   │   │   │   ├── contacts/   # Gestão de contatos
+│   │   │   │   ├── conversations/ # Conversas
+│   │   │   │   ├── dashboard/  # Métricas e KPIs
+│   │   │   │   ├── journey/    # Fluxo de qualificação
+│   │   │   │   ├── messages/   # Mensagens
+│   │   │   │   ├── prospects/  # Pipeline de vendas
+│   │   │   │   ├── reports/    # Relatórios e analytics
+│   │   │   │   ├── tags/       # Tags e segmentação
+│   │   │   │   ├── templates/  # Templates de mensagem
+│   │   │   │   └── whatsapp/   # Webhook e processor
+│   │   │   └── server.ts       # Entry point
+│   │   ├── drizzle/            # Migrations
 │   │   └── package.json
-│   ├── web/          # Frontend React
+│   ├── web/                    # Frontend React
 │   │   ├── src/
-│   │   │   ├── components/  # Componentes reutilizáveis
-│   │   │   ├── pages/       # Páginas da aplicação
-│   │   │   └── main.tsx     # Entry point
+│   │   │   ├── assets/         # Fonts e imagens
+│   │   │   ├── components/     # Componentes reutilizáveis
+│   │   │   ├── pages/          # Páginas da aplicação
+│   │   │   ├── services/       # API client
+│   │   │   └── main.tsx        # Entry point
 │   │   └── package.json
-│   └── shared/       # Tipos compartilhados
+│   └── shared/                 # Tipos compartilhados
 │       └── package.json
-├── docs/             # Documentação
-├── .env.example      # Template de variáveis de ambiente
-└── package.json      # Workspace root
+├── specs/                      # Especificações de features
+├── .env.example                # Template de variáveis
+└── package.json                # Workspace root
 ```
 
 ## Começando
@@ -189,12 +208,17 @@ npm run test:web
 
 ## Roadmap
 
-- [ ] Integração completa WhatsApp Business API
-- [ ] Sistema de automações
-- [ ] Dashboard com métricas em tempo real
+- [x] Integração WhatsApp Business API
+- [x] Sistema de tags e segmentação
+- [x] Templates de mensagens
+- [x] Campanhas de marketing
+- [x] Dashboard com métricas e relatórios
+- [ ] Sistema de automações (workflows)
 - [ ] Relatórios exportáveis (PDF/Excel)
 - [ ] Integração com outros canais (Email, SMS)
 - [ ] App mobile
+
+> Veja o [CHANGELOG](CHANGELOG.md) para histórico completo de versões.
 
 ## Contribuição
 
