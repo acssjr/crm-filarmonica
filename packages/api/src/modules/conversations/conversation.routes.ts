@@ -4,7 +4,6 @@ import { listActiveConversations, getConversationWithMessages } from './conversa
 import { listMessages } from '../messages/message.repository.js'
 import { saveOutgoingMessage } from '../messages/message.service.js'
 import { sendWhatsAppMessage } from '../../lib/whatsapp-client.js'
-import { findContactById } from '../contacts/contact.repository.js'
 import { logMessageSent } from '../events/event.service.js'
 
 interface ConversationParams {
@@ -29,9 +28,15 @@ export async function conversationRoutes(app: FastifyInstance): Promise<void> {
   app.get<{ Querystring: ListConversationsQuery }>(
     '/conversations',
     { preHandler: [authMiddleware] },
-    async (request: FastifyRequest<{ Querystring: ListConversationsQuery }>, reply: FastifyReply) => {
+    async (_request: FastifyRequest<{ Querystring: ListConversationsQuery }>, reply: FastifyReply) => {
       const conversations = await listActiveConversations()
-      return reply.send(conversations)
+      return reply.send({
+        data: conversations,
+        total: conversations.length,
+        page: 1,
+        limit: 50,
+        totalPages: 1,
+      })
     }
   )
 
@@ -52,7 +57,7 @@ export async function conversationRoutes(app: FastifyInstance): Promise<void> {
         })
       }
 
-      return reply.send(conversation)
+      return reply.send({ conversa: conversation })
     }
   )
 

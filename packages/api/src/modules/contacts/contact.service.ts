@@ -92,3 +92,13 @@ export function parseCampaignCode(text?: string): string | undefined {
   const match = text.match(/^([A-Z]{2,10}\d{1,4})$/i)
   return match ? match[1].toUpperCase() : undefined
 }
+
+// Service object for consistent API across modules
+export const contactService = {
+  findOrCreate: findOrCreateContact,
+  getById: getContactById,
+  update: updateContactDetails,
+  updateJourneyState: updateContactJourneyState,
+  getAll: getContacts,
+  parseCampaignCode,
+}

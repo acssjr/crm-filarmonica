@@ -24,7 +24,13 @@ export async function prospectRoutes(app: FastifyInstance): Promise<void> {
         instrumento,
       })
 
-      return reply.send(prospects)
+      return reply.send({
+        data: prospects,
+        total: prospects.length,
+        page: 1,
+        limit: 50,
+        totalPages: 1,
+      })
     }
   )
 
@@ -45,7 +51,7 @@ export async function prospectRoutes(app: FastifyInstance): Promise<void> {
         })
       }
 
-      return reply.send(prospect)
+      return reply.send({ interessado: prospect })
     }
   )
 }

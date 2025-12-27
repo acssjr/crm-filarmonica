@@ -5,7 +5,7 @@ import { handleAgeCollection } from './age.handler.js'
 import { handleInstrumentCollection } from './instrument.handler.js'
 import { handleSaxophoneVerification } from './saxophone.handler.js'
 import { handleExperienceCollection } from './experience.handler.js'
-import { handleAvailabilityCollection } from './availability.handler.js'
+import { handleAvailabilityCheck } from './availability.handler.js'
 import { handleIncompatible } from './incompatible.handler.js'
 
 export interface HandlerContext {
@@ -29,7 +29,7 @@ const handlers: Partial<Record<JourneyState, StateHandler>> = {
   coletando_instrumento: handleInstrumentCollection,
   verificando_saxofone: handleSaxophoneVerification,
   coletando_experiencia: handleExperienceCollection,
-  coletando_disponibilidade: handleAvailabilityCollection,
+  coletando_disponibilidade: handleAvailabilityCheck,
   incompativel: handleIncompatible,
 }
 

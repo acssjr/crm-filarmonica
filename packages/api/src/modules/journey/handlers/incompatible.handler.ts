@@ -39,7 +39,7 @@ Enquanto isso, fique a vontade para nos visitar!
 📍 Praca da Bandeira, 25 - Centro, Nazare - BA
 
 Ate breve! 🎵`,
-      nextState: 'cadastro_completo',
+      nextState: 'qualificado',
       data: {
         listaEspera: true,
       },
@@ -56,7 +56,7 @@ Obrigado pelo interesse na Filarmonica.
 Se mudar de ideia, e so nos chamar! 🎵
 
 Ate mais!`,
-      nextState: 'cadastro_completo',
+      nextState: 'qualificado',
       data: {
         listaEspera: false,
         desistiu: true,

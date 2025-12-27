@@ -33,9 +33,11 @@ export const EstadoJornada = {
 
 export type EstadoJornada = (typeof EstadoJornada)[keyof typeof EstadoJornada]
 
-// Canal de comunicacao
+// Canal de comunicacao (prepared for omnichannel)
 export const Canal = {
   WHATSAPP: 'whatsapp',
+  INSTAGRAM: 'instagram',
+  MESSENGER: 'messenger',
 } as const
 
 export type Canal = (typeof Canal)[keyof typeof Canal]
@@ -89,3 +91,73 @@ export const TipoEvento = {
 } as const
 
 export type TipoEvento = (typeof TipoEvento)[keyof typeof TipoEvento]
+
+// ==================== TAGS ====================
+
+// Cores de tags
+export const TagCor = {
+  GRAY: 'gray',
+  RED: 'red',
+  ORANGE: 'orange',
+  YELLOW: 'yellow',
+  GREEN: 'green',
+  BLUE: 'blue',
+  PURPLE: 'purple',
+  PINK: 'pink',
+} as const
+
+export type TagCor = (typeof TagCor)[keyof typeof TagCor]
+
+// ==================== TEMPLATES ====================
+
+// Tipo de template
+export const TemplateTipo = {
+  INTERNO: 'interno',
+  HSM: 'hsm',
+} as const
+
+export type TemplateTipo = (typeof TemplateTipo)[keyof typeof TemplateTipo]
+
+// Status do HSM
+export const HsmStatus = {
+  PENDENTE: 'pendente',
+  APROVADO: 'aprovado',
+  REJEITADO: 'rejeitado',
+} as const
+
+export type HsmStatus = (typeof HsmStatus)[keyof typeof HsmStatus]
+
+// ==================== CAMPANHAS ====================
+
+// Status da campanha
+export const CampanhaStatus = {
+  RASCUNHO: 'rascunho',
+  AGENDADA: 'agendada',
+  EM_ANDAMENTO: 'em_andamento',
+  CONCLUIDA: 'concluida',
+  CANCELADA: 'cancelada',
+} as const
+
+export type CampanhaStatus = (typeof CampanhaStatus)[keyof typeof CampanhaStatus]
+
+// Recorrência da campanha
+export const CampanhaRecorrencia = {
+  NENHUMA: 'nenhuma',
+  DIARIO: 'diario',
+  SEMANAL: 'semanal',
+  MENSAL: 'mensal',
+} as const
+
+export type CampanhaRecorrencia = (typeof CampanhaRecorrencia)[keyof typeof CampanhaRecorrencia]
+
+// Status do destinatário
+export const DestinatarioStatus = {
+  PENDENTE: 'pendente',
+  ENVIADA: 'enviada',
+  ENTREGUE: 'entregue',
+  LIDA: 'lida',
+  RESPONDIDA: 'respondida',
+  FALHOU: 'falhou',
+} as const
+
+export type DestinatarioStatus = (typeof DestinatarioStatus)[keyof typeof DestinatarioStatus]

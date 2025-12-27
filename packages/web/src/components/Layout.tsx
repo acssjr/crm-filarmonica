@@ -17,8 +17,7 @@ import {
   LogOut,
   User,
   Sun,
-  Moon,
-  ExternalLink
+  Moon
 } from 'lucide-react'
 import { cn } from '../lib/utils'
 import { useDarkMode } from '../hooks/useDarkMode'

@@ -1,8 +1,8 @@
-import 'dotenv/config'
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import cookie from '@fastify/cookie'
 import formbody from '@fastify/formbody'
+import { config } from './config/index.js'
 import { setupErrorHandler } from './plugins/error-handler.js'
 import { setupLogger } from './plugins/logger.js'
 import { webhookRoutes } from './modules/whatsapp/index.js'
@@ -11,19 +11,23 @@ import { dashboardRoutes } from './modules/dashboard/index.js'
 import { contactRoutes } from './modules/contacts/index.js'
 import { conversationRoutes } from './modules/conversations/index.js'
 import { prospectRoutes } from './modules/prospects/index.js'
+import { tagRoutes } from './modules/tags/index.js'
+import { templateRoutes } from './modules/templates/index.js'
+import { campaignRoutes } from './modules/campaigns/index.js'
+import { reportRoutes } from './modules/reports/index.js'
 
 // Import workers to start them
 import './workers/index.js'
 
-const PORT = parseInt(process.env.API_PORT || '3000', 10)
-const HOST = process.env.API_HOST || '0.0.0.0'
+// Validate configuration on startup
+config.validate()
 
 async function buildApp() {
   const app = Fastify({
     logger: {
-      level: process.env.LOG_LEVEL || 'info',
+      level: config.server.logLevel,
       transport:
-        process.env.NODE_ENV === 'development'
+        config.env.isDevelopment
           ? {
               target: 'pino-pretty',
               options: {
@@ -37,12 +41,20 @@ async function buildApp() {
 
   // Register plugins
   await app.register(cors, {
-    origin: process.env.CORS_ORIGIN || true,
+    origin: config.server.corsOrigin,
     credentials: true,
   })
 
+  // Cookie secret is required in production (validated in config)
+  const cookieSecret = config.security.cookieSecret ||
+    (config.env.isDevelopment ? 'dev-cookie-secret-min-32-chars-long!' : undefined)
+
+  if (!cookieSecret) {
+    throw new Error('COOKIE_SECRET is required in production')
+  }
+
   await app.register(cookie, {
-    secret: process.env.COOKIE_SECRET || 'cookie-secret-min-32-chars-long!',
+    secret: cookieSecret,
     hook: 'onRequest',
   })
 
@@ -61,7 +73,11 @@ async function buildApp() {
   app.register(async (api) => {
     // Root endpoint
     api.get('/', async () => {
-      return { message: 'CRM Filarmonica API v1.0.0' }
+      return {
+        name: config.app.name,
+        version: config.app.version,
+        status: 'running',
+      }
     })
 
     // Register all routes
@@ -71,6 +87,10 @@ async function buildApp() {
     await api.register(contactRoutes)
     await api.register(conversationRoutes)
     await api.register(prospectRoutes)
+    await api.register(tagRoutes)
+    await api.register(templateRoutes)
+    await api.register(campaignRoutes)
+    await api.register(reportRoutes)
   }, { prefix: '/api' })
 
   return app
@@ -80,8 +100,9 @@ async function start() {
   const app = await buildApp()
 
   try {
-    await app.listen({ port: PORT, host: HOST })
-    app.log.info(`Server running on http://${HOST}:${PORT}`)
+    await app.listen({ port: config.server.port, host: config.server.host })
+    app.log.info(`${config.app.name} API v${config.app.version}`)
+    app.log.info(`Server running on http://${config.server.host}:${config.server.port}`)
   } catch (err) {
     app.log.error(err)
     process.exit(1)

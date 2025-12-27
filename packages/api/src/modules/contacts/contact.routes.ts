@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { authMiddleware } from '../auth/auth.middleware.js'
-import { getContacts, getContactById, updateContactDetails } from './contact.service.js'
+import { getContacts, updateContactDetails } from './contact.service.js'
 import { findContactById } from './contact.repository.js'
 import { listConversationsByContact } from '../conversations/conversation.repository.js'
 import { findInteressadoByContactId } from '../prospects/prospect.repository.js'
@@ -39,7 +39,14 @@ export async function contactRoutes(app: FastifyInstance): Promise<void> {
         estadoJornada,
       })
 
-      return reply.send(result)
+      // Flatten pagination for frontend
+      return reply.send({
+        data: result.data,
+        total: result.pagination.total,
+        page: result.pagination.page,
+        limit: result.pagination.limit,
+        totalPages: result.pagination.totalPages,
+      })
     }
   )
 
@@ -67,9 +74,11 @@ export async function contactRoutes(app: FastifyInstance): Promise<void> {
       ])
 
       return reply.send({
-        ...contact,
-        interessado,
-        ultimaConversa: conversas[0] || null,
+        contato: {
+          ...contact,
+          interessado,
+          ultimaConversa: conversas[0] || null,
+        }
       })
     }
   )

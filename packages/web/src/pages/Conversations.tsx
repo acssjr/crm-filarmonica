@@ -107,7 +107,7 @@ export function Conversations() {
                 <div className="empty-state-icon">
                   <AlertCircle className="w-6 h-6" strokeWidth={1.5} />
                 </div>
-                <h3 className="empty-state-title">Conversa nao encontrada</h3>
+                <h3 className="empty-state-title">Conversa não encontrada</h3>
               </div>
             </div>
           )
