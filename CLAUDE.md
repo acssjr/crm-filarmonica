@@ -106,3 +106,10 @@ Copy `.env.example` to `.env` and fill in:
 - Functional approach, minimal classes
 - Zod for validation
 - Drizzle for database queries
+
+## Convenções de Commits e PRs
+
+- **Idioma**: Português brasileiro (pt-BR)
+- **Commits**: Seguir Conventional Commits (feat, fix, docs, chore, etc.)
+- **PRs**: Título e descrição em português
+- **Sem assinaturas automáticas**: Não incluir "Generated with Claude Code" ou similares
