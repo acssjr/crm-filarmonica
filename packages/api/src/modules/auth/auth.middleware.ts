@@ -7,14 +7,13 @@ declare module 'fastify' {
   }
 }
 
+// Bypass auth apenas em desenvolvimento - NUNCA em produção
+const BYPASS_AUTH = process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true'
+
 export async function authMiddleware(
   request: FastifyRequest,
   reply: FastifyReply
 ): Promise<void> {
-  // TODO: Reativar autenticação quando Clerk estiver configurado
-  // Bypass temporário para desenvolvimento
-  const BYPASS_AUTH = true
-
   if (BYPASS_AUTH) {
     request.admin = {
       sub: 'dev-admin',

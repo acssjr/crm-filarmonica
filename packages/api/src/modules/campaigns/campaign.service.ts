@@ -183,6 +183,41 @@ export async function getCampaignRecipients(campanhaId: string): Promise<Array<C
   return findRecipientsByCampaignWithContacts(campanhaId)
 }
 
+export interface PaginatedRecipients {
+  data: Array<CampanhaDestinatario & { contato: Contato }>
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+}
+
+export async function getCampaignRecipientsPaginated(
+  campanhaId: string,
+  page: number,
+  limit: number
+): Promise<PaginatedRecipients> {
+  // Get all recipients (repository doesn't have pagination yet)
+  const allRecipients = await findRecipientsByCampaignWithContacts(campanhaId)
+  const total = allRecipients.length
+  const totalPages = Math.ceil(total / limit)
+  const offset = (page - 1) * limit
+
+  // Slice for pagination
+  const data = allRecipients.slice(offset, offset + limit)
+
+  return {
+    data,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+    },
+  }
+}
+
 export async function addRecipientsFromFilters(campanhaId: string): Promise<{ count: number; error?: string }> {
   const campanha = await findCampaignById(campanhaId)
   if (!campanha) {
@@ -415,6 +450,7 @@ export const campaignService = {
   delete: deleteExistingCampaign,
   previewRecipients: previewCampaignRecipients,
   getRecipients: getCampaignRecipients,
+  getRecipientsPaginated: getCampaignRecipientsPaginated,
   addRecipientsFromFilters,
   addManualRecipients,
   removeRecipient,

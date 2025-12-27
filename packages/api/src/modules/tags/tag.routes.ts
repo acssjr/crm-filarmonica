@@ -1,7 +1,32 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import { z } from 'zod'
 import { authMiddleware } from '../auth/auth.middleware.js'
 import { tagService } from './tag.service.js'
 import { findContactById } from '../contacts/contact.repository.js'
+
+// Zod Schemas para validação
+const uuidSchema = z.string().uuid('ID deve ser um UUID válido')
+
+const tagColorsSchema = z.enum(['gray', 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink'])
+
+const createTagSchema = z.object({
+  nome: z.string().min(1, 'Nome é obrigatório').max(50, 'Nome deve ter no máximo 50 caracteres'),
+  cor: tagColorsSchema.optional(),
+})
+
+const updateTagSchema = z.object({
+  nome: z.string().min(1).max(50).optional(),
+  cor: tagColorsSchema.optional(),
+})
+
+const updateContactTagsSchema = z.object({
+  tagIds: z.array(uuidSchema),
+})
+
+// Type inference from schemas
+type CreateTagBody = z.infer<typeof createTagSchema>
+type UpdateTagBody = z.infer<typeof updateTagSchema>
+type UpdateContactTagsBody = z.infer<typeof updateContactTagsSchema>
 
 interface TagParams {
   id: string
@@ -12,18 +37,18 @@ interface ContactTagParams {
   tagId: string
 }
 
-interface CreateTagBody {
-  nome: string
-  cor?: 'gray' | 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink'
-}
-
-interface UpdateTagBody {
-  nome?: string
-  cor?: 'gray' | 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink'
-}
-
-interface UpdateContactTagsBody {
-  tagIds: string[]
+// Helper para validar UUID e retornar erro
+function validateUuid(id: string, reply: FastifyReply): boolean {
+  const result = uuidSchema.safeParse(id)
+  if (!result.success) {
+    reply.status(400).send({
+      error: 'Bad Request',
+      message: 'ID inválido',
+      statusCode: 400,
+    })
+    return false
+  }
+  return true
 }
 
 export async function tagRoutes(app: FastifyInstance): Promise<void> {
@@ -55,6 +80,8 @@ export async function tagRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [authMiddleware] },
     async (request: FastifyRequest<{ Params: TagParams }>, reply: FastifyReply) => {
       const { id } = request.params
+      if (!validateUuid(id, reply)) return
+
       const tag = await tagService.getById(id)
 
       if (!tag) {
@@ -74,16 +101,17 @@ export async function tagRoutes(app: FastifyInstance): Promise<void> {
     '/tags',
     { preHandler: [authMiddleware] },
     async (request: FastifyRequest<{ Body: CreateTagBody }>, reply: FastifyReply) => {
-      const { nome, cor } = request.body
-
-      if (!nome) {
+      // Validar body com Zod
+      const parseResult = createTagSchema.safeParse(request.body)
+      if (!parseResult.success) {
         return reply.status(400).send({
           error: 'Bad Request',
-          message: 'Nome e obrigatorio',
+          message: parseResult.error.errors[0]?.message || 'Dados inválidos',
           statusCode: 400,
         })
       }
 
+      const { nome, cor } = parseResult.data
       const result = await tagService.create({ nome, cor })
 
       if (result.error) {
@@ -104,8 +132,18 @@ export async function tagRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [authMiddleware] },
     async (request: FastifyRequest<{ Params: TagParams; Body: UpdateTagBody }>, reply: FastifyReply) => {
       const { id } = request.params
-      const { nome, cor } = request.body
+      if (!validateUuid(id, reply)) return
 
+      const bodyResult = updateTagSchema.safeParse(request.body)
+      if (!bodyResult.success) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: bodyResult.error.errors[0]?.message || 'Dados inválidos',
+          statusCode: 400,
+        })
+      }
+
+      const { nome, cor } = bodyResult.data
       const result = await tagService.update(id, { nome, cor })
 
       if (result.error) {
@@ -127,6 +165,8 @@ export async function tagRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [authMiddleware] },
     async (request: FastifyRequest<{ Params: TagParams }>, reply: FastifyReply) => {
       const { id } = request.params
+      if (!validateUuid(id, reply)) return
+
       const result = await tagService.delete(id)
 
       if (!result.success) {
@@ -149,6 +189,7 @@ export async function tagRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [authMiddleware] },
     async (request: FastifyRequest<{ Params: TagParams }>, reply: FastifyReply) => {
       const { id } = request.params
+      if (!validateUuid(id, reply)) return
 
       const contact = await findContactById(id)
       if (!contact) {
@@ -170,7 +211,16 @@ export async function tagRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [authMiddleware] },
     async (request: FastifyRequest<{ Params: TagParams; Body: UpdateContactTagsBody }>, reply: FastifyReply) => {
       const { id } = request.params
-      const { tagIds } = request.body
+      if (!validateUuid(id, reply)) return
+
+      const bodyResult = updateContactTagsSchema.safeParse(request.body)
+      if (!bodyResult.success) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: bodyResult.error.errors[0]?.message || 'tagIds deve ser um array de UUIDs válidos',
+          statusCode: 400,
+        })
+      }
 
       const contact = await findContactById(id)
       if (!contact) {
@@ -181,15 +231,7 @@ export async function tagRoutes(app: FastifyInstance): Promise<void> {
         })
       }
 
-      if (!Array.isArray(tagIds)) {
-        return reply.status(400).send({
-          error: 'Bad Request',
-          message: 'tagIds deve ser um array',
-          statusCode: 400,
-        })
-      }
-
-      const result = await tagService.updateContactTags(id, tagIds)
+      const result = await tagService.updateContactTags(id, bodyResult.data.tagIds)
 
       if (!result.success) {
         return reply.status(400).send({
@@ -210,6 +252,8 @@ export async function tagRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [authMiddleware] },
     async (request: FastifyRequest<{ Params: ContactTagParams }>, reply: FastifyReply) => {
       const { id, tagId } = request.params
+      if (!validateUuid(id, reply)) return
+      if (!validateUuid(tagId, reply)) return
 
       const contact = await findContactById(id)
       if (!contact) {
@@ -240,6 +284,8 @@ export async function tagRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [authMiddleware] },
     async (request: FastifyRequest<{ Params: ContactTagParams }>, reply: FastifyReply) => {
       const { id, tagId } = request.params
+      if (!validateUuid(id, reply)) return
+      if (!validateUuid(tagId, reply)) return
 
       const contact = await findContactById(id)
       if (!contact) {

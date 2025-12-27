@@ -418,6 +418,20 @@ export async function getInstrumentsReport(): Promise<InstrumentsReport> {
 
 // ==================== CSV EXPORT ====================
 
+// Escapa campos CSV para evitar CSV injection (fórmulas maliciosas)
+function escapeCsvField(value: string | number): string {
+  const str = String(value)
+  // Se começa com caracteres que podem ser fórmulas, adiciona aspas simples
+  if (/^[=+\-@\t\r]/.test(str)) {
+    return `"'${str.replace(/"/g, '""')}"`
+  }
+  // Se contém vírgula, aspas ou quebra de linha, coloca entre aspas
+  if (/[,"\n\r]/.test(str)) {
+    return `"${str.replace(/"/g, '""')}"`
+  }
+  return str
+}
+
 export function contactsReportToCsv(report: ContactsReport): string {
   const lines = ['Metrica,Valor']
   lines.push(`Total de Contatos,${report.total}`)
@@ -426,17 +440,17 @@ export function contactsReportToCsv(report: ContactsReport): string {
   lines.push('')
   lines.push('Origem,Quantidade')
   for (const item of report.porOrigem) {
-    lines.push(`${item.origem},${item.count}`)
+    lines.push(`${escapeCsvField(item.origem)},${item.count}`)
   }
   lines.push('')
   lines.push('Canal,Quantidade')
   for (const item of report.porCanal) {
-    lines.push(`${item.canal},${item.count}`)
+    lines.push(`${escapeCsvField(item.canal)},${item.count}`)
   }
   lines.push('')
   lines.push('Data,Quantidade')
   for (const item of report.porDia) {
-    lines.push(`${item.data},${item.count}`)
+    lines.push(`${escapeCsvField(item.data)},${item.count}`)
   }
   return lines.join('\n')
 }
@@ -444,7 +458,7 @@ export function contactsReportToCsv(report: ContactsReport): string {
 export function funnelReportToCsv(report: FunnelReport): string {
   const lines = ['Etapa,Quantidade,Percentual']
   for (const etapa of report.etapas) {
-    lines.push(`${etapa.estado},${etapa.count},${etapa.percentual}%`)
+    lines.push(`${escapeCsvField(etapa.estado)},${etapa.count},${etapa.percentual}%`)
   }
   lines.push('')
   lines.push(`Taxa de Conversao,${report.taxaConversao}%`)
@@ -454,7 +468,7 @@ export function funnelReportToCsv(report: FunnelReport): string {
 export function instrumentsReportToCsv(report: InstrumentsReport): string {
   const lines = ['Instrumento,Quantidade,Percentual']
   for (const item of report.distribuicao) {
-    lines.push(`${item.instrumento},${item.count},${item.percentual}%`)
+    lines.push(`${escapeCsvField(item.instrumento)},${item.count},${item.percentual}%`)
   }
   lines.push('')
   lines.push(`Compativeis,${report.compativeis}`)
