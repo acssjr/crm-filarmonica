@@ -1,6 +1,13 @@
-const WHATSAPP_API_URL = 'https://graph.facebook.com/v18.0'
-const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_ID
-const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN
+/**
+ * @deprecated Use adapters/whatsapp.adapter.ts instead
+ * This file is kept for backward compatibility during migration.
+ */
+
+import { config } from '../config/index.js'
+
+const WHATSAPP_API_URL = config.whatsapp.apiUrl
+const WHATSAPP_PHONE_ID = config.whatsapp.phoneId
+const WHATSAPP_ACCESS_TOKEN = config.whatsapp.accessToken
 
 export interface WhatsAppMessage {
   messaging_product: 'whatsapp'
@@ -61,7 +68,7 @@ export async function sendWhatsAppMessage(
     })
 
     if (!response.ok) {
-      const errorData = await response.json()
+      const errorData = await response.json() as { error?: { message?: string } }
       console.error('WhatsApp API error:', errorData)
       return {
         success: false,

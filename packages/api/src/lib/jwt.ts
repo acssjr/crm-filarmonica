@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken'
+import jwt, { SignOptions } from 'jsonwebtoken'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-min-32-chars!'
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m'
@@ -17,15 +17,11 @@ export interface TokenPair {
 }
 
 export function signAccessToken(payload: JwtPayload): string {
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  })
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN as SignOptions['expiresIn'] })
 }
 
 export function signRefreshToken(payload: JwtPayload): string {
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: REFRESH_TOKEN_EXPIRES_IN,
-  })
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRES_IN as SignOptions['expiresIn'] })
 }
 
 export function verifyToken(token: string): JwtPayload {

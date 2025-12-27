@@ -1,10 +1,10 @@
-import type { Contato } from '@crm-filarmonica/shared'
+import type { Contato } from '../../db/schema.js'
 import type { JourneyState } from './transitions.js'
 import { transitionTo, shouldStartJourney, isJourneyActive } from './state-machine.js'
 import { STATE_PROMPTS, type HandlerContext, type HandlerResult } from './handlers/index.js'
 import { handleNameCollection } from './handlers/name.handler.js'
 import { handleAgeCollection } from './handlers/age.handler.js'
-import { handleInstrumentSelection } from './handlers/instrument.handler.js'
+import { handleInstrumentCollection } from './handlers/instrument.handler.js'
 import { handleSaxophoneVerification } from './handlers/saxophone.handler.js'
 import { handleExperienceCollection } from './handlers/experience.handler.js'
 import { handleAvailabilityCheck } from './handlers/availability.handler.js'
@@ -17,10 +17,10 @@ type StateHandler = (ctx: HandlerContext) => Promise<HandlerResult>
 const STATE_HANDLERS: Partial<Record<JourneyState, StateHandler>> = {
   coletando_nome: handleNameCollection,
   coletando_idade: handleAgeCollection,
-  coletando_instrumento: handleInstrumentSelection,
-  verificando_sax: handleSaxophoneVerification,
+  coletando_instrumento: handleInstrumentCollection,
+  verificando_saxofone: handleSaxophoneVerification,
   coletando_experiencia: handleExperienceCollection,
-  verificando_disponibilidade: handleAvailabilityCheck,
+  coletando_disponibilidade: handleAvailabilityCheck,
   incompativel: handleIncompatible,
 }
 
@@ -88,7 +88,7 @@ export class JourneyService {
     }
 
     // Immediately transition to name collection
-    const readyForName = await transitionTo(updated, 'coletando_nome')
+    await transitionTo(updated, 'coletando_nome')
 
     return {
       response: `${STATE_PROMPTS.boas_vindas}\n\n${STATE_PROMPTS.coletando_nome}`,
@@ -135,47 +135,24 @@ export class JourneyService {
 
   /**
    * Update contact with collected data
+   * Note: Only 'nome' can be stored on Contato. Other data (instrumento, experiencia, etc.)
+   * is stored in the interessados table via saveProspect()
    */
   private async updateContactData(
     contactId: string,
     data: Record<string, unknown>
   ): Promise<void> {
-    const updates: Partial<Contato> = {}
-
-    if (data.nome) updates.nome = data.nome as string
-    if (data.idade) updates.idade = data.idade as number
-    if (data.instrumento) updates.instrumento = data.instrumento as string
-    if (data.instrumentoSugerido) updates.instrumento = data.instrumentoSugerido as string
-
-    // Store additional data in metadata
-    const metadataFields = [
-      'experiencia',
-      'detalhesExperiencia',
-      'diasDisponiveis',
-      'motivoIncompatibilidade',
-      'listaEspera',
-      'desistiu',
-      'notas',
-    ]
-
-    const metadata: Record<string, unknown> = {}
-    for (const field of metadataFields) {
-      if (data[field] !== undefined) {
-        metadata[field] = data[field]
-      }
+    // Only update fields that exist on Contato
+    if (data.nome) {
+      await contactService.update(contactId, { nome: data.nome as string })
     }
-
-    if (Object.keys(metadata).length > 0) {
-      updates.metadados = {
-        ...(typeof updates.metadados === 'object' ? updates.metadados : {}),
-        ...metadata,
-      } as Record<string, unknown>
-    }
-
-    if (Object.keys(updates).length > 0) {
-      await contactService.update(contactId, updates)
-    }
+    // Store the data for later use in saveProspect
+    // This data is passed through HandlerResult and used when shouldSaveProspect is true
+    this.pendingProspectData.set(contactId, data)
   }
+
+  // Temporary storage for prospect data collected during journey
+  private pendingProspectData = new Map<string, Record<string, unknown>>()
 
   /**
    * Save collected data as a prospect
@@ -187,26 +164,24 @@ export class JourneyService {
       return
     }
 
-    // Get updated contact data
-    const contact = await contactService.getById(contactId)
-    if (!contact) {
-      return
-    }
-
-    const metadata = (contact.metadados as Record<string, unknown>) || {}
+    // Get pending prospect data collected during journey
+    const pendingData = this.pendingProspectData.get(contactId) || {}
 
     await prospectService.createFromJourney(contactId, {
-      instrumento: contact.instrumento || undefined,
-      experiencia: metadata.experiencia as string | undefined,
-      diasDisponiveis: metadata.diasDisponiveis as string[] | undefined,
-      notas: metadata.notas as string | undefined,
+      instrumento: pendingData.instrumento as string | undefined,
+      experiencia: pendingData.experiencia as string | undefined,
+      diasDisponiveis: pendingData.diasDisponiveis as string[] | undefined,
+      notas: pendingData.notas as string | undefined,
     })
+
+    // Clean up pending data
+    this.pendingProspectData.delete(contactId)
   }
 
   /**
    * Request human assistance for a contact
    */
-  async requestHumanAssistance(contact: Contato, reason: string): Promise<JourneyResponse> {
+  async requestHumanAssistance(contact: Contato, _reason: string): Promise<JourneyResponse> {
     await transitionTo(contact, 'atendimento_humano')
 
     return {

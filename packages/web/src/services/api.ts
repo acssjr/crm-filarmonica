@@ -303,4 +303,309 @@ export const prospects = {
   get: (id: string) => request<ProspectDetailResponse>(`/prospects/${id}`),
 }
 
+// ============ Tags ============
+
+export interface Tag {
+  id: string
+  nome: string
+  cor: 'gray' | 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink'
+  createdAt: string
+}
+
+export interface CreateTagRequest {
+  nome: string
+  cor?: Tag['cor']
+}
+
+export const tags = {
+  list: () => request<Tag[]>('/tags'),
+
+  get: (id: string) => request<Tag>(`/tags/${id}`),
+
+  create: (data: CreateTagRequest) =>
+    request<Tag>('/tags', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: Partial<CreateTagRequest>) =>
+    request<Tag>(`/tags/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    request<void>(`/tags/${id}`, { method: 'DELETE' }),
+
+  getContactTags: (contactId: string) =>
+    request<Tag[]>(`/contacts/${contactId}/tags`),
+
+  updateContactTags: (contactId: string, tagIds: string[]) =>
+    request<Tag[]>(`/contacts/${contactId}/tags`, {
+      method: 'PUT',
+      body: JSON.stringify({ tagIds }),
+    }),
+}
+
+// ============ Templates ============
+
+export interface TemplateCategoria {
+  id: string
+  nome: string
+  isSistema: boolean
+  createdAt: string
+}
+
+export interface Template {
+  id: string
+  categoriaId: string | null
+  nome: string
+  conteudo: string
+  tipo: 'interno' | 'hsm'
+  hsmNome: string | null
+  hsmStatus: 'pendente' | 'aprovado' | 'rejeitado' | null
+  createdAt: string
+  updatedAt: string
+  categoria: TemplateCategoria | null
+}
+
+export interface TemplateVariable {
+  key: string
+  label: string
+  example: string
+}
+
+export interface CreateTemplateRequest {
+  nome: string
+  conteudo: string
+  categoriaId?: string
+  tipo?: 'interno' | 'hsm'
+  hsmNome?: string
+}
+
+export const templates = {
+  list: (categoriaId?: string) =>
+    request<Template[]>('/templates', { params: { categoriaId } }),
+
+  get: (id: string) => request<Template>(`/templates/${id}`),
+
+  create: (data: CreateTemplateRequest) =>
+    request<Template>('/templates', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: Partial<CreateTemplateRequest>) =>
+    request<Template>(`/templates/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    request<void>(`/templates/${id}`, { method: 'DELETE' }),
+
+  preview: (id: string) =>
+    request<{ original: string; preview: string }>(`/templates/${id}/preview`, {
+      method: 'POST',
+    }),
+
+  previewContent: (conteudo: string) =>
+    request<{ original: string; preview: string }>('/templates/preview', {
+      method: 'POST',
+      body: JSON.stringify({ conteudo }),
+    }),
+
+  test: (id: string, telefone: string) =>
+    request<{ success: boolean; message: string; preview: string }>(`/templates/${id}/test`, {
+      method: 'POST',
+      body: JSON.stringify({ telefone }),
+    }),
+
+  getVariables: () => request<TemplateVariable[]>('/templates/variables'),
+
+  listCategorias: () => request<TemplateCategoria[]>('/template-categorias'),
+
+  createCategoria: (nome: string) =>
+    request<TemplateCategoria>('/template-categorias', {
+      method: 'POST',
+      body: JSON.stringify({ nome }),
+    }),
+
+  deleteCategoria: (id: string) =>
+    request<void>(`/template-categorias/${id}`, { method: 'DELETE' }),
+}
+
+// ============ Campanhas ============
+
+export interface CampaignFilters {
+  origem?: string[]
+  estadoJornada?: string[]
+  tags?: string[]
+  instrumento?: string[]
+  canal?: string[]
+}
+
+export interface Campanha {
+  id: string
+  nome: string
+  templateId: string
+  filtros: CampaignFilters | null
+  status: 'rascunho' | 'agendada' | 'em_andamento' | 'concluida' | 'cancelada'
+  agendadaPara: string | null
+  recorrencia: 'nenhuma' | 'diario' | 'semanal' | 'mensal'
+  recorrenciaFim: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CampanhaDestinatario {
+  id: string
+  campanhaId: string
+  contatoId: string
+  status: 'pendente' | 'enviada' | 'entregue' | 'lida' | 'respondida' | 'falhou'
+  erro: string | null
+  enviadaAt: string | null
+  entregueAt: string | null
+  lidaAt: string | null
+  respondidaAt: string | null
+  contato: Contato
+}
+
+export interface CampanhaDetails {
+  campanha: Campanha
+  recipientStats: Record<string, number>
+  totalRecipients: number
+  executions: any[]
+}
+
+export interface CreateCampanhaRequest {
+  nome: string
+  templateId: string
+  filtros?: CampaignFilters
+  agendadaPara?: string
+  recorrencia?: Campanha['recorrencia']
+  recorrenciaFim?: string
+}
+
+export const campanhas = {
+  list: () => request<Campanha[]>('/campanhas'),
+
+  get: (id: string) => request<CampanhaDetails>(`/campanhas/${id}`),
+
+  create: (data: CreateCampanhaRequest) =>
+    request<Campanha>('/campanhas', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: Partial<CreateCampanhaRequest>) =>
+    request<Campanha>(`/campanhas/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    request<void>(`/campanhas/${id}`, { method: 'DELETE' }),
+
+  previewRecipients: (filtros: CampaignFilters) =>
+    request<{ total: number; contacts: Contato[] }>('/campanhas/preview-recipients', {
+      method: 'POST',
+      body: JSON.stringify({ filtros }),
+    }),
+
+  getDestinatarios: (id: string) =>
+    request<CampanhaDestinatario[]>(`/campanhas/${id}/destinatarios`),
+
+  addDestinatarios: (id: string, options: { contatoIds?: string[]; fromFilters?: boolean }) =>
+    request<{ added: number }>(`/campanhas/${id}/destinatarios`, {
+      method: 'POST',
+      body: JSON.stringify(options),
+    }),
+
+  agendar: (id: string, agendadaPara: string) =>
+    request<Campanha>(`/campanhas/${id}/agendar`, {
+      method: 'POST',
+      body: JSON.stringify({ agendadaPara }),
+    }),
+
+  cancelar: (id: string) =>
+    request<Campanha>(`/campanhas/${id}/cancelar`, { method: 'POST' }),
+}
+
+// ============ Relatórios ============
+
+export interface ContactsReport {
+  total: number
+  novosNoPeriodo: number
+  porOrigem: { origem: string; count: number }[]
+  porCanal: { canal: string; count: number }[]
+  porDia: { data: string; count: number }[]
+  crescimento: number
+}
+
+export interface ConversationsReport {
+  total: number
+  ativas: number
+  encerradas: number
+  mensagensPorDia: { data: string; entrada: number; saida: number }[]
+  tempoMedioRespostaMinutos: number
+}
+
+export interface FunnelReport {
+  etapas: { estado: string; count: number; percentual: number }[]
+  taxaConversao: number
+}
+
+export interface CampaignsReport {
+  total: number
+  porStatus: { status: string; count: number }[]
+  metricas: {
+    totalEnviadas: number
+    totalEntregues: number
+    totalLidas: number
+    totalRespondidas: number
+    totalFalhas: number
+    taxaEntrega: number
+    taxaLeitura: number
+    taxaResposta: number
+  }
+}
+
+export interface InstrumentsReport {
+  distribuicao: { instrumento: string; count: number; percentual: number }[]
+  compativeis: number
+  incompativeis: number
+  taxaCompatibilidade: number
+}
+
+export interface ReportParams {
+  inicio?: string
+  fim?: string
+  periodo?: '7d' | '30d' | '90d' | '365d'
+}
+
+export const relatorios = {
+  contatos: (params?: ReportParams) =>
+    request<ContactsReport>('/relatorios/contatos', { params: params as Params }),
+
+  conversas: (params?: ReportParams) =>
+    request<ConversationsReport>('/relatorios/conversas', { params: params as Params }),
+
+  funil: () => request<FunnelReport>('/relatorios/funil'),
+
+  campanhas: (params?: ReportParams) =>
+    request<CampaignsReport>('/relatorios/campanhas', { params: params as Params }),
+
+  instrumentos: () => request<InstrumentsReport>('/relatorios/instrumentos'),
+
+  exportCsv: (tipo: 'contatos' | 'funil' | 'instrumentos', params?: ReportParams) => {
+    const searchParams = new URLSearchParams()
+    if (params?.inicio) searchParams.append('inicio', params.inicio)
+    if (params?.fim) searchParams.append('fim', params.fim)
+    if (params?.periodo) searchParams.append('periodo', params.periodo)
+    const query = searchParams.toString()
+    window.open(`${API_BASE_URL}/relatorios/${tipo}/export${query ? '?' + query : ''}`, '_blank')
+  },
+}
+
 export { ApiError }

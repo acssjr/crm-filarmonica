@@ -150,11 +150,12 @@ export async function countContactsByEstado(): Promise<Record<string, number>> {
 export async function countNewContactsToday(): Promise<number> {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+  const todayISO = today.toISOString()
 
   const result = await db
     .select({ count: sql<number>`count(*)` })
     .from(contatos)
-    .where(sql`${contatos.createdAt} >= ${today}`)
+    .where(sql`${contatos.createdAt} >= ${todayISO}`)
 
   return Number(result[0]?.count || 0)
 }

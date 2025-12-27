@@ -7,7 +7,7 @@ export async function dashboardRoutes(app: FastifyInstance): Promise<void> {
   app.get(
     '/dashboard/stats',
     { preHandler: [authMiddleware] },
-    async (request: FastifyRequest, reply: FastifyReply) => {
+    async (_request: FastifyRequest, reply: FastifyReply) => {
       const stats = await getDashboardStats()
       return reply.send(stats)
     }

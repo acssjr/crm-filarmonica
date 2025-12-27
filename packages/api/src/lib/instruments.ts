@@ -1,37 +1,21 @@
-// Instrumentos prioritários (graves - mais necessários na banda)
-export const PRIORITY_INSTRUMENTS = [
-  'tuba',
-  'bombardino',
-  'trombone',
-  'sax baritono',
-  'sax tenor',
-]
+/**
+ * Instrument utilities
+ *
+ * Re-exports from institution config for backward compatibility.
+ * New code should import directly from config/institution.ts
+ */
 
-// Instrumentos disponíveis
-export const AVAILABLE_INSTRUMENTS = [
-  ...PRIORITY_INSTRUMENTS,
-  'trompete',
-  'clarinete',
-  'flauta',
-  'percussao',
-]
+import {
+  institution,
+  isRestrictedInstrument,
+  isPriorityInstrument,
+  getSuggestedAlternatives,
+} from '../config/institution.js'
 
-// Saxofone alto tem restrição
-export const RESTRICTED_INSTRUMENTS = ['sax alto', 'saxofone alto']
+// Re-export for backward compatibility
+export const PRIORITY_INSTRUMENTS = institution.instruments.priority
+export const AVAILABLE_INSTRUMENTS = institution.instruments.available
+export const RESTRICTED_INSTRUMENTS = institution.instruments.restricted
 
-export function isRestrictedInstrument(instrument: string): boolean {
-  const normalized = instrument.toLowerCase().trim()
-  return RESTRICTED_INSTRUMENTS.some((r) => normalized.includes(r.toLowerCase()))
-}
-
-export function isPriorityInstrument(instrument: string): boolean {
-  const normalized = instrument.toLowerCase().trim()
-  return PRIORITY_INSTRUMENTS.some((p) => normalized.includes(p.toLowerCase()))
-}
-
-export function getSuggestedAlternatives(instrument: string): string[] {
-  if (isRestrictedInstrument(instrument)) {
-    return ['sax tenor', 'sax baritono', 'clarinete', 'trombone']
-  }
-  return []
-}
+// Re-export functions
+export { isRestrictedInstrument, isPriorityInstrument, getSuggestedAlternatives }

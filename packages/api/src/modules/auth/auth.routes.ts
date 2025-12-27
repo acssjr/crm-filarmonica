@@ -61,7 +61,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   app.post(
     '/auth/logout',
     { preHandler: [authMiddleware] },
-    async (request: FastifyRequest, reply: FastifyReply) => {
+    async (_request: FastifyRequest, reply: FastifyReply) => {
       reply.clearCookie('access_token', { path: '/' })
       reply.clearCookie('refresh_token', { path: '/api/auth' })
       return reply.status(204).send()
