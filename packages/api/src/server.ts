@@ -15,6 +15,7 @@ import { tagRoutes } from './modules/tags/index.js'
 import { templateRoutes } from './modules/templates/index.js'
 import { campaignRoutes } from './modules/campaigns/index.js'
 import { reportRoutes } from './modules/reports/index.js'
+import { automationRoutes, initializeAutomationScheduler } from './modules/automations/index.js'
 
 // Import workers to start them
 import './workers/index.js'
@@ -91,6 +92,7 @@ async function buildApp() {
     await api.register(templateRoutes)
     await api.register(campaignRoutes)
     await api.register(reportRoutes)
+    await api.register(automationRoutes)
   }, { prefix: '/api' })
 
   return app
@@ -100,6 +102,9 @@ async function start() {
   const app = await buildApp()
 
   try {
+    // Initialize automation scheduler
+    initializeAutomationScheduler()
+
     await app.listen({ port: config.server.port, host: config.server.host })
     app.log.info(`${config.app.name} API v${config.app.version}`)
     app.log.info(`Server running on http://${config.server.host}:${config.server.port}`)

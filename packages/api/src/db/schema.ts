@@ -223,6 +223,78 @@ export const campanhaExecucoes = pgTable('campanha_execucoes', {
   index('idx_campanha_exec_campanha').on(table.campanhaId),
 ])
 
+// ==================== AUTOMAÇÕES ====================
+
+// Automation trigger types
+export const automacaoTriggerTipoEnum = pgEnum('automacao_trigger_tipo', [
+  'novo_contato',
+  'tag_adicionada',
+  'tag_removida',
+  'jornada_mudou',
+  'tempo_sem_interacao',
+  'mensagem_recebida',
+])
+
+// Automation execution status
+export const automacaoExecucaoStatusEnum = pgEnum('automacao_execucao_status', [
+  'executando',
+  'sucesso',
+  'falha',
+  'aguardando',
+])
+
+// Alert types
+export const alertaTipoEnum = pgEnum('alerta_tipo', ['info', 'warning', 'success'])
+
+// Automações
+export const automacoes = pgTable('automacoes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  nome: varchar('nome', { length: 100 }).notNull(),
+  ativo: boolean('ativo').notNull().default(false),
+  triggerTipo: automacaoTriggerTipoEnum('trigger_tipo').notNull(),
+  triggerConfig: jsonb('trigger_config').notNull().default({}),
+  condicoes: jsonb('condicoes').notNull().default([]),
+  acoes: jsonb('acoes').notNull().default([]),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('idx_automacoes_ativo').on(table.ativo),
+  index('idx_automacoes_trigger').on(table.triggerTipo),
+])
+
+// Automação Execuções
+export const automacaoExecucoes = pgTable('automacao_execucoes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  automacaoId: uuid('automacao_id').notNull().references(() => automacoes.id, { onDelete: 'cascade' }),
+  contatoId: uuid('contato_id').notNull().references(() => contatos.id, { onDelete: 'cascade' }),
+  status: automacaoExecucaoStatusEnum('status').notNull().default('executando'),
+  acoesExecutadas: jsonb('acoes_executadas').notNull().default([]),
+  erro: text('erro'),
+  proximaAcaoEm: timestamp('proxima_acao_em', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('idx_automacao_exec_automacao').on(table.automacaoId),
+  index('idx_automacao_exec_contato').on(table.contatoId),
+  index('idx_automacao_exec_status').on(table.status),
+  index('idx_automacao_exec_proxima').on(table.proximaAcaoEm),
+])
+
+// Alertas
+export const alertas = pgTable('alertas', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tipo: alertaTipoEnum('tipo').notNull().default('info'),
+  titulo: varchar('titulo', { length: 100 }).notNull(),
+  mensagem: text('mensagem').notNull(),
+  contatoId: uuid('contato_id').references(() => contatos.id, { onDelete: 'set null' }),
+  automacaoId: uuid('automacao_id').notNull().references(() => automacoes.id, { onDelete: 'cascade' }),
+  lido: boolean('lido').notNull().default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('idx_alertas_lido').on(table.lido),
+  index('idx_alertas_automacao').on(table.automacaoId),
+  index('idx_alertas_created').on(table.createdAt),
+])
+
 // Type exports for Drizzle
 export type Administrador = typeof administradores.$inferSelect
 export type NewAdministrador = typeof administradores.$inferInsert
@@ -256,3 +328,11 @@ export type CampanhaDestinatario = typeof campanhaDestinatarios.$inferSelect
 export type NewCampanhaDestinatario = typeof campanhaDestinatarios.$inferInsert
 export type CampanhaExecucao = typeof campanhaExecucoes.$inferSelect
 export type NewCampanhaExecucao = typeof campanhaExecucoes.$inferInsert
+
+// Automações
+export type Automacao = typeof automacoes.$inferSelect
+export type NewAutomacao = typeof automacoes.$inferInsert
+export type AutomacaoExecucao = typeof automacaoExecucoes.$inferSelect
+export type NewAutomacaoExecucao = typeof automacaoExecucoes.$inferInsert
+export type Alerta = typeof alertas.$inferSelect
+export type NewAlerta = typeof alertas.$inferInsert
