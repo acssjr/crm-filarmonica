@@ -1,4 +1,4 @@
-import { eq, desc, like, or, sql, and } from 'drizzle-orm'
+import { eq, desc, like, or, sql, and, inArray } from 'drizzle-orm'
 import { db } from '../../db/index.js'
 import { contatos, type Contato, type NewContato } from '../../db/schema.js'
 
@@ -166,4 +166,16 @@ export async function getTotalContacts(): Promise<number> {
     .from(contatos)
 
   return Number(result[0]?.count || 0)
+}
+
+// Batch fetch de contatos por IDs - evita N+1 queries
+export async function findContactsByIds(ids: string[]): Promise<Map<string, Contato>> {
+  if (ids.length === 0) return new Map()
+
+  const result = await db
+    .select()
+    .from(contatos)
+    .where(inArray(contatos.id, ids))
+
+  return new Map(result.map(c => [c.id, c]))
 }

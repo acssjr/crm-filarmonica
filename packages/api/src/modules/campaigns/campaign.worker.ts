@@ -3,12 +3,13 @@ import { redisConnection } from '../../lib/queue.js'
 import { campaignService } from './campaign.service.js'
 import { templateService } from '../templates/template.service.js'
 import { findTemplateById } from '../templates/template.repository.js'
-import { findContactById } from '../contacts/contact.repository.js'
+import { findContactsByIds } from '../contacts/contact.repository.js'
 import { sendWhatsAppMessage } from '../../lib/whatsapp-client.js'
 import {
   findPendingRecipients,
   updateRecipientStatus,
   updateExecution,
+  updateCampaign,
 } from './campaign.repository.js'
 
 const QUEUE_NAME = 'campaign-processor'
@@ -47,6 +48,15 @@ export async function scheduleCampaignJob(campanhaId: string, runAt?: Date): Pro
   await queue.add('process-campaign', { campanhaId }, jobOptions)
 }
 
+// Helper para atualizar status da campanha em caso de erro fatal
+async function failCampaign(campanhaId: string, executionId: string | undefined, error: string): Promise<void> {
+  console.error(`[Campaign Worker] Campaign ${campanhaId} failed: ${error}`)
+  await updateCampaign(campanhaId, { status: 'cancelada' })
+  if (executionId) {
+    await updateExecution(executionId, { concluidaAt: new Date() })
+  }
+}
+
 // Process campaign job
 async function processCampaignJob(job: Job<CampaignJobData>): Promise<void> {
   const { campanhaId } = job.data
@@ -58,7 +68,7 @@ async function processCampaignJob(job: Job<CampaignJobData>): Promise<void> {
   if (!executionId) {
     const result = await campaignService.startExecution(campanhaId)
     if (result.error) {
-      console.error(`[Campaign Worker] Failed to start execution: ${result.error}`)
+      await failCampaign(campanhaId, undefined, result.error)
       return
     }
     executionId = result.executionId
@@ -66,14 +76,14 @@ async function processCampaignJob(job: Job<CampaignJobData>): Promise<void> {
 
   const campanha = await campaignService.getById(campanhaId)
   if (!campanha) {
-    console.error(`[Campaign Worker] Campaign not found: ${campanhaId}`)
+    await failCampaign(campanhaId, executionId, 'Campanha nao encontrada')
     return
   }
 
   // Get template
   const template = await findTemplateById(campanha.templateId)
   if (!template) {
-    console.error(`[Campaign Worker] Template not found: ${campanha.templateId}`)
+    await failCampaign(campanhaId, executionId, `Template nao encontrado: ${campanha.templateId}`)
     return
   }
 
@@ -103,11 +113,15 @@ async function processCampaignJob(job: Job<CampaignJobData>): Promise<void> {
       continue
     }
 
+    // Batch fetch contacts (evita N+1 queries)
+    const contactIds = recipients.map(r => r.contatoId)
+    const contactsMap = await findContactsByIds(contactIds)
+
     // Process each recipient
     for (const recipient of recipients) {
       try {
-        // Get contact
-        const contact = await findContactById(recipient.contatoId)
+        // Get contact from pre-fetched map
+        const contact = contactsMap.get(recipient.contatoId)
         if (!contact) {
           await updateRecipientStatus(recipient.id, 'falhou', 'Contato nao encontrado')
           stats.totalFalhas++
