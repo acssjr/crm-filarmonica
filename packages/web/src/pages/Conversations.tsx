@@ -1,6 +1,17 @@
 import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, useNavigate } from 'react-router-dom'
+import {
+  Search,
+  MessageSquare,
+  AlertCircle,
+  MoreVertical,
+  Calendar,
+  Paperclip,
+  Send,
+  Sparkles,
+  Check
+} from 'lucide-react'
 import { conversations, messages, type ConversaComContato, type Mensagem } from '../services/api'
 import { formatPhone, formatTime, formatDateTime, cn } from '../lib/utils'
 
@@ -25,23 +36,35 @@ export function Conversations() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] -m-8">
+    <div className="flex h-screen">
       {/* Conversations List */}
-      <div className="w-80 border-r border-gray-200 bg-white flex flex-col">
-        <div className="p-4 border-b border-gray-200">
-          <h1 className="text-lg font-semibold text-gray-900">Conversas</h1>
-          <p className="text-sm text-gray-600">
-            {conversationsList?.total ?? 0} conversas
+      <div className="w-80 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex flex-col">
+        <div className="p-5 border-b border-gray-200 dark:border-gray-700">
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Conversas</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            <span className="font-semibold text-gray-900 dark:text-white">{conversationsList?.total ?? 0}</span> conversas ativas
           </p>
+        </div>
+
+        {/* Search */}
+        <div className="p-3 border-b border-gray-100 dark:border-gray-800">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" strokeWidth={1.5} />
+            <input
+              type="text"
+              className="input pl-10 py-2 text-sm"
+              placeholder="Buscar conversa..."
+            />
+          </div>
         </div>
 
         <div className="flex-1 overflow-auto">
           {isLoadingList ? (
             <div className="flex items-center justify-center h-32">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
+              <div className="spinner spinner-md text-primary-600" />
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
+            <div>
               {conversationsList?.data.map((conversation) => (
                 <ConversationItem
                   key={conversation.id}
@@ -51,8 +74,11 @@ export function Conversations() {
                 />
               ))}
               {conversationsList?.data.length === 0 && (
-                <div className="p-4 text-center text-gray-500 text-sm">
-                  Nenhuma conversa encontrada
+                <div className="empty-state">
+                  <div className="empty-state-icon">
+                    <MessageSquare className="w-6 h-6" strokeWidth={1.5} />
+                  </div>
+                  <p className="empty-state-description">Nenhuma conversa encontrada</p>
                 </div>
               )}
             </div>
@@ -61,11 +87,11 @@ export function Conversations() {
       </div>
 
       {/* Conversation Detail */}
-      <div className="flex-1 flex flex-col bg-gray-50">
+      <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-950">
         {id ? (
           isLoadingConversation ? (
             <div className="flex items-center justify-center flex-1">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+              <div className="spinner spinner-lg text-primary-600" />
             </div>
           ) : selectedConversation ? (
             <ConversationDetail
@@ -77,14 +103,24 @@ export function Conversations() {
             />
           ) : (
             <div className="flex items-center justify-center flex-1">
-              <p className="text-gray-500">Conversa não encontrada</p>
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <AlertCircle className="w-6 h-6" strokeWidth={1.5} />
+                </div>
+                <h3 className="empty-state-title">Conversa nao encontrada</h3>
+              </div>
             </div>
           )
         ) : (
           <div className="flex items-center justify-center flex-1">
             <div className="text-center">
-              <ChatIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">Selecione uma conversa</p>
+              <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+                <MessageSquare className="h-12 w-12 text-primary-400" strokeWidth={1.5} />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Selecione uma conversa</h3>
+              <p className="text-gray-500 dark:text-gray-400 max-w-sm">
+                Escolha uma conversa da lista ao lado para visualizar as mensagens
+              </p>
             </div>
           </div>
         )}
@@ -103,34 +139,37 @@ function ConversationItem({ conversation, isSelected, onClick }: ConversationIte
   return (
     <div
       className={cn(
-        'p-4 cursor-pointer hover:bg-gray-50 transition-colors',
-        isSelected && 'bg-blue-50 hover:bg-blue-50'
+        'flex items-start gap-3 p-4 cursor-pointer border-b border-gray-100 dark:border-gray-800 transition-colors',
+        isSelected
+          ? 'bg-gray-50 dark:bg-gray-800'
+          : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
       )}
       onClick={onClick}
     >
-      <div className="flex items-start gap-3">
-        <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-medium flex-shrink-0">
-          {conversation.contato.nome?.charAt(0).toUpperCase() || '?'}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <p className="font-medium text-gray-900 truncate">
-              {conversation.contato.nome || 'Sem nome'}
-            </p>
-            <span className="text-xs text-gray-500">
-              {formatTime(conversation.updatedAt)}
-            </span>
-          </div>
-          <p className="text-sm text-gray-600 truncate">
-            {formatPhone(conversation.contato.telefone)}
-          </p>
-          {conversation.ultimaMensagem && (
-            <p className="text-sm text-gray-500 truncate mt-1">
-              {conversation.ultimaMensagem.conteudo}
-            </p>
-          )}
-        </div>
+      <div className="user-avatar flex-shrink-0">
+        {conversation.contato.nome?.charAt(0).toUpperCase() || '?'}
       </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between">
+          <p className="font-medium text-gray-900 dark:text-white truncate">
+            {conversation.contato.nome || 'Sem nome'}
+          </p>
+          <span className="text-xs text-gray-400 dark:text-gray-500">
+            {formatTime(conversation.updatedAt)}
+          </span>
+        </div>
+        <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+          {formatPhone(conversation.contato.telefone)}
+        </p>
+        {conversation.ultimaMensagem && (
+          <p className="text-sm text-gray-500 dark:text-gray-400 truncate mt-1">
+            {conversation.ultimaMensagem.conteudo}
+          </p>
+        )}
+      </div>
+      {conversation.status === 'ativa' && !isSelected && (
+        <div className="w-2 h-2 rounded-full bg-success-500 flex-shrink-0 mt-2" />
+      )}
     </div>
   )
 }
@@ -177,32 +216,36 @@ function ConversationDetail({ conversation, onMessageSent }: ConversationDetailP
   return (
     <>
       {/* Header */}
-      <div className="p-4 bg-white border-b border-gray-200 flex items-center gap-3">
-        <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-medium">
+      <div className="p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center gap-4">
+        <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-sm font-medium text-primary-600 dark:text-primary-400">
           {conversation.contato.nome?.charAt(0).toUpperCase() || '?'}
         </div>
-        <div>
-          <p className="font-medium text-gray-900">
+        <div className="flex-1">
+          <p className="font-semibold text-gray-900 dark:text-white">
             {conversation.contato.nome || 'Sem nome'}
           </p>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-500 dark:text-gray-400 font-mono">
             {formatPhone(conversation.contato.telefone)}
           </p>
         </div>
-        <div className="ml-auto">
+        <div className="flex items-center gap-3">
           <span className={cn(
             'badge',
-            conversation.status === 'ativa' ? 'badge-green' : 'badge-gray'
+            conversation.status === 'ativa' ? 'badge-success badge-dot' : 'badge-gray'
           )}>
             {conversation.status === 'ativa' ? 'Ativa' : 'Encerrada'}
           </span>
+          <button className="btn btn-ghost btn-icon">
+            <MoreVertical className="w-5 h-5" strokeWidth={1.5} />
+          </button>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-auto p-4 space-y-4">
+      <div className="flex-1 overflow-auto p-6 space-y-4">
         <div className="text-center">
-          <span className="text-xs text-gray-500 bg-white px-2 py-1 rounded">
+          <span className="inline-flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-full shadow-xs">
+            <Calendar className="w-3 h-3" strokeWidth={1.5} />
             Conversa iniciada em {formatDateTime(conversation.createdAt)}
           </span>
         </div>
@@ -215,28 +258,41 @@ function ConversationDetail({ conversation, onMessageSent }: ConversationDetailP
       </div>
 
       {/* Input */}
-      <div className="p-4 bg-white border-t border-gray-200">
-        <form onSubmit={handleSend} className="flex gap-2">
-          <input
-            type="text"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Digite sua mensagem..."
-            className="input flex-1"
-            disabled={sendMutation.isPending}
-          />
+      <div className="p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+        <form onSubmit={handleSend} className="flex gap-3">
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Digite sua mensagem..."
+              className="input pr-12"
+              disabled={sendMutation.isPending}
+            />
+            <button
+              type="button"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            >
+              <Paperclip className="w-5 h-5" strokeWidth={1.5} />
+            </button>
+          </div>
           <button
             type="submit"
             disabled={!message.trim() || sendMutation.isPending}
-            className="btn btn-primary"
+            className="btn btn-primary px-6"
           >
-            {sendMutation.isPending ? 'Enviando...' : 'Enviar'}
+            {sendMutation.isPending ? (
+              <div className="spinner spinner-sm" />
+            ) : (
+              <Send className="w-5 h-5" strokeWidth={1.5} />
+            )}
           </button>
         </form>
         {sendMutation.isError && (
-          <p className="text-red-600 text-sm mt-2">
+          <div className="flex items-center gap-2 mt-2 text-error-600 dark:text-error-400 text-sm">
+            <AlertCircle className="w-4 h-4" strokeWidth={1.5} />
             Erro ao enviar mensagem. Tente novamente.
-          </p>
+          </div>
         )}
       </div>
     </>
@@ -252,37 +308,21 @@ function MessageBubble({ message }: MessageBubbleProps) {
 
   return (
     <div className={cn('flex', isOutgoing ? 'justify-end' : 'justify-start')}>
-      <div
-        className={cn(
-          'max-w-[70%] rounded-lg px-4 py-2',
-          isOutgoing
-            ? 'bg-blue-600 text-white'
-            : 'bg-white text-gray-900 border border-gray-200'
-        )}
-      >
+      <div className={cn('message-bubble', isOutgoing ? 'message-outgoing' : 'message-incoming')}>
         <p className="whitespace-pre-wrap break-words">{message.conteudo}</p>
-        <div
-          className={cn(
-            'flex items-center gap-2 mt-1 text-xs',
-            isOutgoing ? 'text-blue-200' : 'text-gray-500'
-          )}
-        >
+        <div className={cn('message-time flex items-center gap-2', isOutgoing ? 'justify-end' : 'justify-start')}>
           <span>{formatTime(message.createdAt)}</span>
           {isOutgoing && message.tipo === 'automatica' && (
-            <span className="bg-blue-500 px-1.5 py-0.5 rounded text-[10px]">
+            <span className="inline-flex items-center gap-1 text-[10px] opacity-70">
+              <Sparkles className="w-2.5 h-2.5" strokeWidth={1.5} />
               Auto
             </span>
+          )}
+          {isOutgoing && (
+            <Check className="w-3 h-3 opacity-70" strokeWidth={2} />
           )}
         </div>
       </div>
     </div>
-  )
-}
-
-function ChatIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-    </svg>
   )
 }

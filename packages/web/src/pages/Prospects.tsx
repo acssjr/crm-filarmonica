@@ -1,5 +1,21 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
+import {
+  Music,
+  Phone,
+  Clock,
+  X,
+  Users,
+  AlertCircle,
+  Sparkles,
+  CheckCircle,
+  XCircle,
+  LayoutGrid,
+  List,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react'
 import { prospects, type ProspectsParams, type InteressadoComContato } from '../services/api'
 import { formatPhone, formatDateTime, cn } from '../lib/utils'
 
@@ -29,58 +45,67 @@ export function Prospects() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-        Erro ao carregar interessados.
+      <div className="p-6">
+        <div className="card border-l-4 border-l-error-500 bg-error-50 dark:bg-error-900/20">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-error-500" strokeWidth={1.5} />
+            <p className="text-error-700 dark:text-error-300">Erro ao carregar interessados.</p>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Interessados</h1>
-          <p className="text-gray-600 mt-1">
-            {data?.total ?? 0} fichas de interessados
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Interessados</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">
+            <span className="font-semibold text-gray-900 dark:text-white">{data?.total ?? 0}</span> fichas de interessados
           </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-500 dark:text-gray-400">Visualizar:</span>
+          <button className="btn btn-secondary btn-icon">
+            <LayoutGrid className="w-4 h-4" strokeWidth={1.5} />
+          </button>
+          <button className="btn btn-ghost btn-icon">
+            <List className="w-4 h-4" strokeWidth={1.5} />
+          </button>
         </div>
       </div>
 
       {/* Filters */}
       <div className="flex gap-2">
         <button
-          className={cn(
-            'btn',
-            params.compativel === undefined ? 'btn-primary' : 'btn-secondary'
-          )}
+          className={cn('filter-chip', params.compativel === undefined && 'active')}
           onClick={() => handleFilterChange(undefined)}
         >
+          <Sparkles className="w-3.5 h-3.5" strokeWidth={1.5} />
           Todos
         </button>
         <button
-          className={cn(
-            'btn',
-            params.compativel === true ? 'btn-primary' : 'btn-secondary'
-          )}
+          className={cn('filter-chip', params.compativel === true && 'active')}
           onClick={() => handleFilterChange(true)}
         >
-          Compatíveis
+          <CheckCircle className="w-3.5 h-3.5" strokeWidth={1.5} />
+          Compativeis
         </button>
         <button
-          className={cn(
-            'btn',
-            params.compativel === false ? 'btn-primary' : 'btn-secondary'
-          )}
+          className={cn('filter-chip', params.compativel === false && 'active')}
           onClick={() => handleFilterChange(false)}
         >
-          Incompatíveis
+          <XCircle className="w-3.5 h-3.5" strokeWidth={1.5} />
+          Incompativeis
         </button>
       </div>
 
       {/* Grid */}
       {isLoading ? (
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+          <div className="spinner spinner-lg text-primary-600" />
         </div>
       ) : (
         <>
@@ -95,31 +120,40 @@ export function Prospects() {
           </div>
 
           {data?.data.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              Nenhum interessado encontrado
+            <div className="empty-state">
+              <div className="empty-state-icon">
+                <Users className="w-6 h-6" strokeWidth={1.5} />
+              </div>
+              <h3 className="empty-state-title">Nenhum interessado encontrado</h3>
+              <p className="empty-state-description">
+                Tente ajustar os filtros ou aguarde novos interessados
+              </p>
             </div>
           )}
 
           {/* Pagination */}
           {data && data.totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600">
-                Página {data.page} de {data.totalPages}
-              </div>
-              <div className="flex gap-2">
+            <div className="flex items-center justify-between pt-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Pagina <span className="font-semibold text-gray-900 dark:text-white">{data.page}</span> de{' '}
+                <span className="font-semibold text-gray-900 dark:text-white">{data.totalPages}</span>
+              </p>
+              <div className="pagination">
                 <button
-                  className="btn btn-secondary"
+                  className="pagination-btn"
                   disabled={data.page <= 1}
                   onClick={() => handlePageChange(data.page - 1)}
                 >
+                  <ChevronLeft className="w-4 h-4" strokeWidth={1.5} />
                   Anterior
                 </button>
                 <button
-                  className="btn btn-secondary"
+                  className="pagination-btn"
                   disabled={data.page >= data.totalPages}
                   onClick={() => handlePageChange(data.page + 1)}
                 >
-                  Próxima
+                  Proxima
+                  <ChevronRight className="w-4 h-4" strokeWidth={1.5} />
                 </button>
               </div>
             </div>
@@ -146,59 +180,70 @@ interface ProspectCardProps {
 function ProspectCard({ prospect, onClick }: ProspectCardProps) {
   return (
     <div
-      className="card cursor-pointer hover:shadow-md transition-shadow"
+      className="card cursor-pointer group hover:shadow-md transition-shadow"
       onClick={onClick}
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-lg">
+          <div className="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-lg font-semibold text-primary-600 dark:text-primary-400">
             {prospect.nome.charAt(0).toUpperCase()}
           </div>
           <div>
-            <p className="font-semibold text-gray-900">{prospect.nome}</p>
-            <p className="text-sm text-gray-600">{prospect.idade} anos</p>
+            <p className="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+              {prospect.nome}
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{prospect.idade} anos</p>
           </div>
         </div>
         <span className={cn(
-          'badge',
-          prospect.compativel ? 'badge-green' : 'badge-red'
+          'badge badge-dot',
+          prospect.compativel ? 'badge-success' : 'badge-error'
         )}>
-          {prospect.compativel ? 'Compatível' : 'Incompatível'}
+          {prospect.compativel ? 'Compativel' : 'Incompativel'}
         </span>
       </div>
 
-      <div className="space-y-2 text-sm">
-        <div className="flex items-center gap-2">
-          <MusicIcon className="h-4 w-4 text-gray-400" />
-          <span className="text-gray-600">
-            {prospect.instrumentoDesejado}
-            {prospect.instrumentoSugerido && prospect.instrumentoSugerido !== prospect.instrumentoDesejado && (
-              <span className="text-blue-600 ml-1">
-                → {prospect.instrumentoSugerido}
-              </span>
-            )}
-          </span>
+      <div className="space-y-3 text-sm">
+        <div className="flex items-center gap-3 p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800">
+          <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+            <Music className="h-4 w-4 text-primary-600 dark:text-primary-400" strokeWidth={1.5} />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Instrumento</p>
+            <p className="font-medium text-gray-900 dark:text-white">
+              {prospect.instrumentoDesejado}
+              {prospect.instrumentoSugerido && prospect.instrumentoSugerido !== prospect.instrumentoDesejado && (
+                <span className="text-primary-600 dark:text-primary-400 ml-1">
+                  → {prospect.instrumentoSugerido}
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+          <Phone className="h-4 w-4 text-gray-400" strokeWidth={1.5} />
+          <span className="font-mono text-xs">{formatPhone(prospect.contato.telefone)}</span>
         </div>
 
         <div className="flex items-center gap-2">
-          <PhoneIcon className="h-4 w-4 text-gray-400" />
-          <span className="text-gray-600">{formatPhone(prospect.contato.telefone)}</span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <ClockIcon className="h-4 w-4 text-gray-400" />
+          <Clock className="h-4 w-4 text-gray-400" strokeWidth={1.5} />
           <span className={cn(
-            prospect.disponibilidadeHorario ? 'text-green-600' : 'text-red-600'
+            'text-sm font-medium',
+            prospect.disponibilidadeHorario
+              ? 'text-success-600 dark:text-success-400'
+              : 'text-error-600 dark:text-error-400'
           )}>
-            {prospect.disponibilidadeHorario ? 'Horário disponível' : 'Horário indisponível'}
+            {prospect.disponibilidadeHorario ? 'Horario disponivel' : 'Horario indisponivel'}
           </span>
         </div>
       </div>
 
-      <div className="mt-4 pt-4 border-t border-gray-100">
-        <p className="text-xs text-gray-500">
-          Cadastrado em {formatDateTime(prospect.createdAt)}
+      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <p className="text-xs text-gray-400 dark:text-gray-500">
+          {formatDateTime(prospect.createdAt)}
         </p>
+        <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 group-hover:text-primary-500 group-hover:translate-x-1 transition-all" strokeWidth={1.5} />
       </div>
     </div>
   )
@@ -211,84 +256,114 @@ interface ProspectDetailModalProps {
 
 function ProspectDetailModal({ prospect, onClose }: ProspectDetailModalProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">Ficha do Interessado</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-md"
-          >
-            <XIcon className="h-5 w-5" />
-          </button>
-        </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-gray-950/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div className="relative bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
+        {/* Header */}
+        <div className="bg-gray-900 dark:bg-gray-800 p-6 text-white">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Ficha do Interessado</h2>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            >
+              <X className="h-5 w-5" strokeWidth={1.5} />
+            </button>
+          </div>
 
-        <div className="p-6 space-y-6">
-          {/* Header */}
-          <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-2xl">
+          {/* Profile */}
+          <div className="flex items-center gap-4 mt-6">
+            <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-xl font-semibold">
               {prospect.nome.charAt(0).toUpperCase()}
             </div>
             <div>
-              <p className="text-xl font-semibold text-gray-900">{prospect.nome}</p>
-              <p className="text-gray-600">{prospect.idade} anos</p>
-              <div className="mt-1">
+              <p className="text-xl font-semibold">{prospect.nome}</p>
+              <p className="text-gray-400">{prospect.idade} anos</p>
+              <div className="mt-2">
                 <span className={cn(
-                  'badge',
-                  prospect.compativel ? 'badge-green' : 'badge-red'
+                  'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium',
+                  prospect.compativel
+                    ? 'bg-success-500/20 text-success-300'
+                    : 'bg-error-500/20 text-error-300'
                 )}>
-                  {prospect.compativel ? 'Compatível' : 'Incompatível'}
+                  <span className={cn(
+                    'w-1.5 h-1.5 rounded-full',
+                    prospect.compativel ? 'bg-success-400' : 'bg-error-400'
+                  )} />
+                  {prospect.compativel ? 'Compativel' : 'Incompativel'}
                 </span>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Details */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <span className="text-sm text-gray-500">Instrumento Desejado</span>
-              <p className="font-medium">{prospect.instrumentoDesejado}</p>
-            </div>
-            {prospect.instrumentoSugerido && (
-              <div>
-                <span className="text-sm text-gray-500">Instrumento Sugerido</span>
-                <p className="font-medium text-blue-600">{prospect.instrumentoSugerido}</p>
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* Instrument Card */}
+          <div className="card bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-primary-600 flex items-center justify-center">
+                <Music className="w-6 h-6 text-white" strokeWidth={1.5} />
               </div>
-            )}
-            <div>
-              <span className="text-sm text-gray-500">Disponibilidade</span>
-              <p className={cn(
-                'font-medium',
-                prospect.disponibilidadeHorario ? 'text-green-600' : 'text-red-600'
-              )}>
-                {prospect.disponibilidadeHorario ? 'Seg/Qua/Sex 15h-17h' : 'Indisponível'}
-              </p>
+              <div className="flex-1">
+                <p className="text-sm text-gray-600 dark:text-gray-400">Instrumento Musical</p>
+                <p className="font-semibold text-gray-900 dark:text-white">{prospect.instrumentoDesejado}</p>
+                {prospect.instrumentoSugerido && prospect.instrumentoSugerido !== prospect.instrumentoDesejado && (
+                  <p className="text-sm text-primary-600 dark:text-primary-400 font-medium">
+                    Sugestao: {prospect.instrumentoSugerido}
+                  </p>
+                )}
+              </div>
             </div>
-            <div>
-              <span className="text-sm text-gray-500">Telefone</span>
-              <p className="font-medium">{formatPhone(prospect.contato.telefone)}</p>
-            </div>
+          </div>
+
+          {/* Details Grid */}
+          <div className="grid grid-cols-2 gap-4">
+            <InfoCard
+              icon={Clock}
+              label="Disponibilidade"
+              value={prospect.disponibilidadeHorario ? 'Seg/Qua/Sex 15h-17h' : 'Indisponivel'}
+              variant={prospect.disponibilidadeHorario ? 'success' : 'danger'}
+            />
+            <InfoCard
+              icon={Phone}
+              label="Telefone"
+              value={formatPhone(prospect.contato.telefone)}
+            />
           </div>
 
           {prospect.experienciaMusical && (
             <div>
-              <span className="text-sm text-gray-500">Experiência Musical</span>
-              <p className="mt-1 text-gray-900">{prospect.experienciaMusical}</p>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Experiencia Musical</p>
+              <p className="text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">{prospect.experienciaMusical}</p>
             </div>
           )}
 
           {prospect.expectativas && (
             <div>
-              <span className="text-sm text-gray-500">Expectativas</span>
-              <p className="mt-1 text-gray-900">{prospect.expectativas}</p>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Expectativas</p>
+              <p className="text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">{prospect.expectativas}</p>
             </div>
           )}
+        </div>
 
-          <div className="pt-4 border-t border-gray-100">
-            <p className="text-sm text-gray-500">
+        {/* Footer */}
+        <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Ficha criada em {formatDateTime(prospect.createdAt)}
             </p>
+            <div className="flex gap-2">
+              <button onClick={onClose} className="btn btn-secondary">
+                Fechar
+              </button>
+              <Link to={`/contacts/${prospect.contato.id}`} className="btn btn-primary">
+                Ver Contato
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -296,34 +371,28 @@ function ProspectDetailModal({ prospect, onClose }: ProspectDetailModalProps) {
   )
 }
 
-function MusicIcon({ className }: { className?: string }) {
+function InfoCard({ icon: Icon, label, value, variant }: {
+  icon: React.ElementType
+  label: string
+  value: string
+  variant?: 'success' | 'danger'
+}) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-    </svg>
-  )
-}
-
-function PhoneIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-    </svg>
-  )
-}
-
-function ClockIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  )
-}
-
-function XIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-    </svg>
+    <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
+      <div className="w-8 h-8 rounded-lg bg-white dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 shadow-xs">
+        <Icon className="w-4 h-4" strokeWidth={1.5} />
+      </div>
+      <div>
+        <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+        <p className={cn(
+          'font-medium text-sm',
+          variant === 'success' && 'text-success-600 dark:text-success-400',
+          variant === 'danger' && 'text-error-600 dark:text-error-400',
+          !variant && 'text-gray-900 dark:text-white'
+        )}>
+          {value}
+        </p>
+      </div>
+    </div>
   )
 }

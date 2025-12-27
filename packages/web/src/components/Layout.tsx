@@ -1,108 +1,182 @@
+import { useState, useRef, useEffect } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { UserButton, useUser } from '@clerk/clerk-react'
+import {
+  LayoutDashboard,
+  MessageSquare,
+  Users,
+  UserCheck,
+  Megaphone,
+  FileText,
+  BarChart3,
+  Filter,
+  Workflow,
+  Tag,
+  UserCog,
+  Settings,
+  ChevronUp,
+  LogOut,
+  User,
+  Sun,
+  Moon,
+  ExternalLink
+} from 'lucide-react'
 import { cn } from '../lib/utils'
+import { useDarkMode } from '../hooks/useDarkMode'
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-  { name: 'Contatos', href: '/contacts', icon: UsersIcon },
-  { name: 'Conversas', href: '/conversations', icon: ChatIcon },
-  { name: 'Interessados', href: '/prospects', icon: ClipboardIcon },
-]
+const navigation = {
+  principal: [
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Conversas', href: '/conversations', icon: MessageSquare, badge: 12 },
+    { name: 'Contatos', href: '/contacts', icon: Users },
+    { name: 'Interessados', href: '/prospects', icon: UserCheck, badge: 4 },
+  ],
+  marketing: [
+    { name: 'Campanhas', href: '/campaigns', icon: Megaphone },
+    { name: 'Templates', href: '/templates', icon: FileText },
+  ],
+  analise: [
+    { name: 'Relatórios', href: '/reports', icon: BarChart3 },
+    { name: 'Funil', href: '/funnel', icon: Filter },
+  ],
+  gerenciar: [
+    { name: 'Automações', href: '/automations', icon: Workflow },
+    { name: 'Tags', href: '/tags', icon: Tag },
+    { name: 'Equipe', href: '/team', icon: UserCog },
+  ],
+}
 
 export function Layout() {
-  const { user } = useUser()
   const location = useLocation()
+  const { isDark, toggleTheme } = useDarkMode()
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const userMenuRef = useRef<HTMLDivElement>(null)
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const renderNavSection = (items: typeof navigation.principal, label?: string) => (
+    <div className={label ? 'sidebar-section' : ''}>
+      {label && <div className="sidebar-section-label">{label}</div>}
+      <div className="mt-2 space-y-1">
+        {items.map((item) => {
+          const isActive = location.pathname.startsWith(item.href)
+          return (
+            <Link
+              key={item.name}
+              to={item.href}
+              className={cn('sidebar-link', isActive && 'active')}
+            >
+              <item.icon strokeWidth={1.5} />
+              <span className="flex-1">{item.name}</span>
+              {item.badge && (
+                <span className="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-medium px-2 py-0.5 rounded-full">
+                  {item.badge}
+                </span>
+              )}
+            </Link>
+          )
+        })}
+      </div>
+    </div>
+  )
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-gray-50 dark:bg-gray-950">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white flex flex-col">
-        <div className="p-4 border-b border-gray-800">
-          <h1 className="text-xl font-bold">CRM Filarmônica</h1>
-          <p className="text-sm text-gray-400 mt-1">Painel Administrativo</p>
+      <aside className="sidebar">
+        {/* Header */}
+        <div className="sidebar-header">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
+              <MessageSquare className="w-4 h-4 text-white" strokeWidth={2} />
+            </div>
+            <div>
+              <h1 className="sidebar-brand">CRM</h1>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Atendimento</p>
+            </div>
+          </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
-          {navigation.map((item) => {
-            const isActive = location.pathname.startsWith(item.href)
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                  isActive
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                )}
-              >
-                <item.icon className="h-5 w-5" />
-                {item.name}
-              </Link>
-            )
-          })}
+        {/* Navigation */}
+        <nav className="sidebar-nav">
+          {renderNavSection(navigation.principal)}
+          {renderNavSection(navigation.marketing, 'Marketing')}
+          {renderNavSection(navigation.analise, 'Análise')}
+          {renderNavSection(navigation.gerenciar, 'Gerenciar')}
         </nav>
 
-        <div className="p-4 border-t border-gray-800">
-          <div className="flex items-center gap-3">
-            <UserButton
-              appearance={{
-                elements: {
-                  avatarBox: 'h-8 w-8',
-                },
-              }}
-            />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">
-                {user?.firstName || user?.emailAddresses[0]?.emailAddress}
-              </p>
-              <p className="text-xs text-gray-400 truncate">
-                {user?.emailAddresses[0]?.emailAddress}
-              </p>
-            </div>
+        {/* Footer */}
+        <div className="sidebar-footer space-y-1">
+          <Link to="/settings" className="sidebar-link">
+            <Settings strokeWidth={1.5} />
+            <span>Configurações</span>
+          </Link>
+
+          {/* User Card */}
+          <div className="relative" ref={userMenuRef}>
+            <button
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              className="user-card w-full"
+            >
+              <div className="relative">
+                <div className="user-avatar">A</div>
+                <div className="absolute -bottom-0.5 -right-0.5 online-dot ring-2 ring-white dark:ring-gray-950" />
+              </div>
+              <div className="user-info">
+                <p className="user-name">Administrador</p>
+                <p className="user-email">admin@crm.com</p>
+              </div>
+              <ChevronUp
+                className={cn(
+                  'w-4 h-4 text-gray-400 transition-transform',
+                  userMenuOpen && 'rotate-180'
+                )}
+                strokeWidth={1.5}
+              />
+            </button>
+
+            {/* User Dropdown */}
+            {userMenuOpen && (
+              <div className="dropdown absolute bottom-full left-0 right-0 mb-2">
+                <button
+                  onClick={toggleTheme}
+                  className="dropdown-item w-full"
+                >
+                  {isDark ? <Sun strokeWidth={1.5} /> : <Moon strokeWidth={1.5} />}
+                  <span>{isDark ? 'Modo claro' : 'Modo escuro'}</span>
+                </button>
+                <div className="dropdown-divider" />
+                <Link to="/profile" className="dropdown-item" onClick={() => setUserMenuOpen(false)}>
+                  <User strokeWidth={1.5} />
+                  <span>Meu perfil</span>
+                </Link>
+                <Link to="/settings" className="dropdown-item" onClick={() => setUserMenuOpen(false)}>
+                  <Settings strokeWidth={1.5} />
+                  <span>Configurações da conta</span>
+                </Link>
+                <div className="dropdown-divider" />
+                <button className="dropdown-item w-full text-error-600 dark:text-error-400 hover:bg-error-50 dark:hover:bg-error-900/20">
+                  <LogOut strokeWidth={1.5} />
+                  <span>Sair</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </aside>
 
-      {/* Main content */}
+      {/* Main Content */}
       <main className="flex-1 overflow-auto">
-        <div className="p-8">
-          <Outlet />
-        </div>
+        <Outlet />
       </main>
     </div>
-  )
-}
-
-// Simple icon components
-function HomeIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-    </svg>
-  )
-}
-
-function UsersIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-    </svg>
-  )
-}
-
-function ChatIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-    </svg>
-  )
-}
-
-function ClipboardIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-    </svg>
   )
 }

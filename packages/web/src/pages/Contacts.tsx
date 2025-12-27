@@ -1,12 +1,30 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
+import {
+  Search,
+  Plus,
+  Users,
+  MessageSquare,
+  Pencil,
+  ChevronRight,
+  ChevronLeft,
+  X,
+  AlertCircle,
+  Phone,
+  Calendar,
+  Tag,
+  Music,
+  Clock,
+  CheckCircle,
+  XCircle
+} from 'lucide-react'
 import { contacts, type ContactsParams, type Contato } from '../services/api'
 import {
   formatPhone,
   formatDateTime,
   getOrigemLabel,
   getEstadoJornadaLabel,
-  getEstadoJornadaColor,
   cn,
 } from '../lib/utils'
 
@@ -36,67 +54,74 @@ export function Contacts() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-        Erro ao carregar contatos.
+      <div className="p-6">
+        <div className="card border-l-4 border-l-error-500 bg-error-50 dark:bg-error-900/20">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-error-500" strokeWidth={1.5} />
+            <p className="text-error-700 dark:text-error-300">Erro ao carregar contatos.</p>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Contatos</h1>
-          <p className="text-gray-600 mt-1">
-            {data?.total ?? 0} contatos cadastrados
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Contatos</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">
+            <span className="font-semibold text-gray-900 dark:text-white">{data?.total ?? 0}</span> contatos cadastrados
           </p>
         </div>
+        <button className="btn btn-primary">
+          <Plus className="w-4 h-4" strokeWidth={1.5} />
+          Novo Contato
+        </button>
       </div>
 
       {/* Filters */}
       <div className="card">
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Buscar
-            </label>
-            <input
-              type="text"
-              className="input"
-              placeholder="Nome ou telefone..."
-              onChange={(e) => handleFilterChange('search', e.target.value)}
-            />
+            <label className="label">Buscar</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" strokeWidth={1.5} />
+              <input
+                type="text"
+                className="input pl-10"
+                placeholder="Nome ou telefone..."
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+              />
+            </div>
           </div>
-          <div className="w-40">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Origem
-            </label>
+          <div className="w-44">
+            <label className="label">Origem</label>
             <select
               className="input"
               onChange={(e) => handleFilterChange('origem', e.target.value)}
             >
-              <option value="">Todas</option>
-              <option value="organico">Orgânico</option>
+              <option value="">Todas as origens</option>
+              <option value="organico">Organico</option>
               <option value="campanha">Campanha</option>
-              <option value="indicacao">Indicação</option>
+              <option value="indicacao">Indicacao</option>
             </select>
           </div>
-          <div className="w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Estado da Jornada
-            </label>
+          <div className="w-52">
+            <label className="label">Estado da Jornada</label>
             <select
               className="input"
               onChange={(e) => handleFilterChange('estadoJornada', e.target.value)}
             >
-              <option value="">Todos</option>
+              <option value="">Todos os estados</option>
               <option value="inicial">Inicial</option>
               <option value="boas_vindas">Boas-vindas</option>
               <option value="coletando_nome">Coletando nome</option>
               <option value="coletando_idade">Coletando idade</option>
               <option value="coletando_instrumento">Coletando instrumento</option>
               <option value="qualificado">Qualificado</option>
-              <option value="incompativel">Incompatível</option>
+              <option value="incompativel">Incompativel</option>
               <option value="atendimento_humano">Atendimento humano</option>
             </select>
           </div>
@@ -104,67 +129,78 @@ export function Contacts() {
       </div>
 
       {/* Table */}
-      <div className="card p-0 overflow-hidden">
+      <div className="table-container">
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+            <div className="spinner spinner-lg text-primary-600" />
           </div>
         ) : (
           <>
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+            <table className="table">
+              <thead>
                 <tr>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Contato
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Telefone
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Origem
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Estado
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Criado em
-                  </th>
+                  <th>Contato</th>
+                  <th>Telefone</th>
+                  <th>Origem</th>
+                  <th>Estado</th>
+                  <th>Criado em</th>
+                  <th className="w-16"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody>
                 {data?.data.map((contact) => (
                   <tr
                     key={contact.id}
-                    className="hover:bg-gray-50 cursor-pointer"
+                    className="cursor-pointer"
                     onClick={() => setSelectedContact(contact)}
                   >
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-gray-900">
-                        {contact.nome || 'Sem nome'}
+                    <td>
+                      <div className="flex items-center gap-3">
+                        <div className="user-avatar">
+                          {(contact.nome || 'C')[0].toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900 dark:text-white">
+                            {contact.nome || 'Sem nome'}
+                          </p>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-gray-600">
+                    <td className="font-mono text-sm text-gray-600 dark:text-gray-300">
                       {formatPhone(contact.telefone)}
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="badge badge-blue">
+                    <td>
+                      <span className="badge badge-primary">
                         {getOrigemLabel(contact.origem)}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={cn('badge', getEstadoJornadaColor(contact.estadoJornada))}>
+                    <td>
+                      <span className={cn('badge', getEstadoJornadaBadge(contact.estadoJornada))}>
                         {getEstadoJornadaLabel(contact.estadoJornada)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-gray-600 text-sm">
+                    <td className="text-gray-500 dark:text-gray-400 text-sm">
                       {formatDateTime(contact.createdAt)}
+                    </td>
+                    <td>
+                      <button className="btn btn-ghost btn-icon">
+                        <ChevronRight className="w-4 h-4" strokeWidth={1.5} />
+                      </button>
                     </td>
                   </tr>
                 ))}
                 {data?.data.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                      Nenhum contato encontrado
+                    <td colSpan={6}>
+                      <div className="empty-state">
+                        <div className="empty-state-icon">
+                          <Users className="w-6 h-6" strokeWidth={1.5} />
+                        </div>
+                        <h3 className="empty-state-title">Nenhum contato encontrado</h3>
+                        <p className="empty-state-description">
+                          Tente ajustar os filtros ou aguarde novos contatos
+                        </p>
+                      </div>
                     </td>
                   </tr>
                 )}
@@ -173,24 +209,37 @@ export function Contacts() {
 
             {/* Pagination */}
             {data && data.totalPages > 1 && (
-              <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200 bg-gray-50">
-                <div className="text-sm text-gray-600">
-                  Página {data.page} de {data.totalPages}
-                </div>
-                <div className="flex gap-2">
+              <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Pagina <span className="font-semibold text-gray-900 dark:text-white">{data.page}</span> de{' '}
+                  <span className="font-semibold text-gray-900 dark:text-white">{data.totalPages}</span>
+                </p>
+                <div className="pagination">
                   <button
-                    className="btn btn-secondary"
+                    className="pagination-btn"
                     disabled={data.page <= 1}
                     onClick={() => handlePageChange(data.page - 1)}
                   >
-                    Anterior
+                    <ChevronLeft className="w-4 h-4" strokeWidth={1.5} />
                   </button>
+                  {Array.from({ length: Math.min(5, data.totalPages) }, (_, i) => {
+                    const page = i + 1
+                    return (
+                      <button
+                        key={page}
+                        className={cn('pagination-btn', data.page === page && 'active')}
+                        onClick={() => handlePageChange(page)}
+                      >
+                        {page}
+                      </button>
+                    )
+                  })}
                   <button
-                    className="btn btn-secondary"
+                    className="pagination-btn"
                     disabled={data.page >= data.totalPages}
                     onClick={() => handlePageChange(data.page + 1)}
                   >
-                    Próxima
+                    <ChevronRight className="w-4 h-4" strokeWidth={1.5} />
                   </button>
                 </div>
               </div>
@@ -210,6 +259,20 @@ export function Contacts() {
   )
 }
 
+function getEstadoJornadaBadge(estado: string): string {
+  const badges: Record<string, string> = {
+    inicial: 'badge-gray',
+    boas_vindas: 'badge-primary',
+    coletando_nome: 'badge-warning',
+    coletando_idade: 'badge-warning',
+    coletando_instrumento: 'badge-warning',
+    qualificado: 'badge-success',
+    incompativel: 'badge-error',
+    atendimento_humano: 'badge-primary',
+  }
+  return badges[estado] || 'badge-gray'
+}
+
 interface ContactDetailDrawerProps {
   contact: Contato
   onClose: () => void
@@ -223,123 +286,168 @@ function ContactDetailDrawer({ contact, onClose }: ContactDetailDrawerProps) {
 
   return (
     <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-xl">
+      <div
+        className="absolute inset-0 bg-gray-950/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white dark:bg-gray-900 shadow-2xl">
         <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-4 border-b">
-            <h2 className="text-lg font-semibold">Detalhes do Contato</h2>
+          {/* Header */}
+          <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Detalhes do Contato</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{formatPhone(contact.telefone)}</p>
+            </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-md"
+              className="btn btn-ghost btn-icon"
             >
-              <XIcon className="h-5 w-5" />
+              <X className="h-5 w-5" strokeWidth={1.5} />
             </button>
           </div>
 
           {isLoading ? (
             <div className="flex items-center justify-center flex-1">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+              <div className="spinner spinner-lg text-primary-600" />
             </div>
           ) : (
-            <div className="flex-1 overflow-auto p-4 space-y-6">
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Informações</h3>
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-sm text-gray-500">Nome</span>
-                    <p className="font-medium">{data?.contato.nome || 'Não informado'}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-500">Telefone</span>
-                    <p className="font-medium">{formatPhone(data?.contato.telefone || '')}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-500">Origem</span>
-                    <p>
-                      <span className="badge badge-blue">
-                        {getOrigemLabel(data?.contato.origem || '')}
-                      </span>
-                      {data?.contato.origemCampanha && (
-                        <span className="ml-2 text-sm text-gray-600">
-                          ({data.contato.origemCampanha})
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-500">Estado da Jornada</span>
-                    <p>
-                      <span className={cn('badge', getEstadoJornadaColor(data?.contato.estadoJornada || ''))}>
-                        {getEstadoJornadaLabel(data?.contato.estadoJornada || '')}
-                      </span>
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-500">Criado em</span>
-                    <p className="text-sm">{formatDateTime(data?.contato.createdAt || '')}</p>
-                  </div>
+            <div className="flex-1 overflow-auto p-5 space-y-6">
+              {/* Contact Info */}
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-xl font-semibold text-primary-600 dark:text-primary-400">
+                  {(data?.contato.nome || 'C')[0].toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    {data?.contato.nome || 'Sem nome'}
+                  </h3>
+                  <span className={cn('badge', getEstadoJornadaBadge(data?.contato.estadoJornada || ''))}>
+                    {getEstadoJornadaLabel(data?.contato.estadoJornada || '')}
+                  </span>
                 </div>
               </div>
 
+              <div className="h-px bg-gray-200 dark:bg-gray-700" />
+
+              {/* Info Cards */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Informacoes
+                </h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <InfoCard
+                    icon={Phone}
+                    label="Telefone"
+                    value={formatPhone(data?.contato.telefone || '')}
+                  />
+                  <InfoCard
+                    icon={Tag}
+                    label="Origem"
+                    value={
+                      <span className="badge badge-primary">
+                        {getOrigemLabel(data?.contato.origem || '')}
+                      </span>
+                    }
+                  />
+                  <InfoCard icon={Users} label="Tipo" value={data?.contato.tipo || 'Desconhecido'} />
+                  <InfoCard
+                    icon={Calendar}
+                    label="Criado em"
+                    value={formatDateTime(data?.contato.createdAt || '')}
+                  />
+                </div>
+                {data?.contato.origemCampanha && (
+                  <InfoCard icon={Tag} label="Campanha" value={data.contato.origemCampanha} />
+                )}
+              </div>
+
+              {/* Interested Person Info */}
               {data?.contato.interessado && (
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-2">Ficha do Interessado</h3>
-                  <div className="space-y-3 bg-gray-50 rounded-lg p-4">
-                    <div>
-                      <span className="text-sm text-gray-500">Nome</span>
-                      <p className="font-medium">{data.contato.interessado.nome}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm text-gray-500">Idade</span>
-                      <p className="font-medium">{data.contato.interessado.idade} anos</p>
-                    </div>
-                    <div>
-                      <span className="text-sm text-gray-500">Instrumento Desejado</span>
-                      <p className="font-medium">{data.contato.interessado.instrumentoDesejado}</p>
-                    </div>
-                    {data.contato.interessado.instrumentoSugerido && (
-                      <div>
-                        <span className="text-sm text-gray-500">Instrumento Sugerido</span>
-                        <p className="font-medium">{data.contato.interessado.instrumentoSugerido}</p>
+                <>
+                  <div className="h-px bg-gray-200 dark:bg-gray-700" />
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Ficha do Interessado
+                    </h4>
+                    <div className="card bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                      <div className="grid grid-cols-2 gap-4">
+                        <InfoCard icon={Users} label="Nome" value={data.contato.interessado.nome} />
+                        <InfoCard icon={Calendar} label="Idade" value={`${data.contato.interessado.idade} anos`} />
+                        <InfoCard
+                          icon={Music}
+                          label="Instrumento Desejado"
+                          value={data.contato.interessado.instrumentoDesejado}
+                        />
+                        {data.contato.interessado.instrumentoSugerido && (
+                          <InfoCard
+                            icon={Music}
+                            label="Instrumento Sugerido"
+                            value={data.contato.interessado.instrumentoSugerido}
+                          />
+                        )}
+                        {data.contato.interessado.experienciaMusical && (
+                          <InfoCard
+                            icon={Music}
+                            label="Experiencia Musical"
+                            value={data.contato.interessado.experienciaMusical}
+                          />
+                        )}
+                        <InfoCard
+                          icon={Clock}
+                          label="Disponibilidade"
+                          value={
+                            <span className={cn('badge', data.contato.interessado.disponibilidadeHorario ? 'badge-success' : 'badge-error')}>
+                              {data.contato.interessado.disponibilidadeHorario ? 'Disponivel' : 'Indisponivel'}
+                            </span>
+                          }
+                        />
+                        <InfoCard
+                          icon={data.contato.interessado.compativel ? CheckCircle : XCircle}
+                          label="Compativel"
+                          value={
+                            <span className={cn('badge', data.contato.interessado.compativel ? 'badge-success' : 'badge-error')}>
+                              {data.contato.interessado.compativel ? 'Sim' : 'Nao'}
+                            </span>
+                          }
+                        />
                       </div>
-                    )}
-                    {data.contato.interessado.experienciaMusical && (
-                      <div>
-                        <span className="text-sm text-gray-500">Experiência Musical</span>
-                        <p className="font-medium">{data.contato.interessado.experienciaMusical}</p>
-                      </div>
-                    )}
-                    <div>
-                      <span className="text-sm text-gray-500">Disponibilidade</span>
-                      <p>
-                        <span className={cn('badge', data.contato.interessado.disponibilidadeHorario ? 'badge-green' : 'badge-red')}>
-                          {data.contato.interessado.disponibilidadeHorario ? 'Disponível' : 'Indisponível'}
-                        </span>
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-sm text-gray-500">Compatível</span>
-                      <p>
-                        <span className={cn('badge', data.contato.interessado.compativel ? 'badge-green' : 'badge-red')}>
-                          {data.contato.interessado.compativel ? 'Sim' : 'Não'}
-                        </span>
-                      </p>
                     </div>
                   </div>
-                </div>
+                </>
               )}
             </div>
           )}
+
+          {/* Footer Actions */}
+          <div className="p-5 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+            <div className="flex gap-3">
+              <Link
+                to={`/conversations?contact=${contact.id}`}
+                className="btn btn-primary flex-1"
+              >
+                <MessageSquare className="w-4 h-4" strokeWidth={1.5} />
+                Ver Conversas
+              </Link>
+              <button className="btn btn-secondary">
+                <Pencil className="w-4 h-4" strokeWidth={1.5} />
+                Editar
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   )
 }
 
-function XIcon({ className }: { className?: string }) {
+function InfoCard({ icon: Icon, label, value }: { icon?: React.ElementType; label: string; value: React.ReactNode }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-    </svg>
+    <div>
+      <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-1">
+        {Icon && <Icon className="w-3.5 h-3.5" strokeWidth={1.5} />}
+        {label}
+      </div>
+      <div className="font-medium text-gray-900 dark:text-white">{value}</div>
+    </div>
   )
 }
