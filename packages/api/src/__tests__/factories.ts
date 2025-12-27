@@ -1,18 +1,19 @@
 /**
- * Test Factories
- * Generate consistent test data for unit tests
+ * Fábricas de Testes
+ * Gera dados de teste consistentes para testes unitários
  */
 import { v4 as uuidv4 } from 'uuid'
-import type { TriggerTipo } from '../modules/automations/domain/value-objects/trigger.vo.js'
+import { vi } from 'vitest'
+import type { TriggerTipo, TriggerConfig } from '../modules/automations/domain/value-objects/trigger.vo.js'
 import type { ActionTipo } from '../modules/automations/domain/value-objects/action.vo.js'
 import type { ConditionCampo, ConditionOperador } from '../modules/automations/domain/value-objects/condition.vo.js'
 
-// ==================== Automation Factories ====================
+// ==================== Fábricas de Automação ====================
 
 export interface CreateAutomationInputFactory {
   nome?: string
   triggerTipo?: TriggerTipo
-  triggerConfig?: Record<string, unknown>
+  triggerConfig?: TriggerConfig
   condicoes?: Array<{
     campo: ConditionCampo
     operador: ConditionOperador
@@ -26,42 +27,51 @@ export interface CreateAutomationInputFactory {
 
 export function createAutomationInput(overrides: CreateAutomationInputFactory = {}) {
   return {
-    nome: overrides.nome ?? `Test Automation ${Date.now()}`,
+    nome: overrides.nome ?? `Automação de Teste ${Date.now()}`,
     triggerTipo: overrides.triggerTipo ?? 'novo_contato' as TriggerTipo,
     triggerConfig: overrides.triggerConfig ?? {},
     condicoes: overrides.condicoes ?? [],
     acoes: overrides.acoes ?? [
-      { tipo: 'enviar_mensagem' as ActionTipo, config: { mensagem: 'Hello!' } },
+      { tipo: 'enviar_mensagem' as ActionTipo, config: { mensagem: 'Olá!' } },
     ],
   }
 }
 
-export function createAutomationPersistence(overrides: Partial<{
+export interface AutomationPersistenceData {
   id: string
   nome: string
   ativo: boolean
   triggerTipo: TriggerTipo
-  triggerConfig: Record<string, unknown>
-  condicoes: unknown[]
-  acoes: unknown[]
+  triggerConfig: TriggerConfig
+  condicoes: Array<{
+    campo: ConditionCampo
+    operador: ConditionOperador
+    valor: string | string[]
+  }>
+  acoes: Array<{
+    tipo: ActionTipo
+    config: Record<string, unknown>
+  }>
   createdAt: Date
   updatedAt: Date
-}> = {}) {
+}
+
+export function createAutomationPersistence(overrides: Partial<AutomationPersistenceData> = {}): AutomationPersistenceData {
   const now = new Date()
   return {
     id: overrides.id ?? uuidv4(),
-    nome: overrides.nome ?? 'Test Automation',
+    nome: overrides.nome ?? 'Automação de Teste',
     ativo: overrides.ativo ?? false,
     triggerTipo: overrides.triggerTipo ?? 'novo_contato' as TriggerTipo,
     triggerConfig: overrides.triggerConfig ?? {},
     condicoes: overrides.condicoes ?? [],
-    acoes: overrides.acoes ?? [{ tipo: 'enviar_mensagem', config: { mensagem: 'Hi' } }],
+    acoes: overrides.acoes ?? [{ tipo: 'enviar_mensagem' as ActionTipo, config: { mensagem: 'Olá!' } }],
     createdAt: overrides.createdAt ?? now,
     updatedAt: overrides.updatedAt ?? now,
   }
 }
 
-// ==================== Contact Factories ====================
+// ==================== Fábricas de Contato ====================
 
 export function createContactData(overrides: Partial<{
   id: string
@@ -85,18 +95,27 @@ export function createContactData(overrides: Partial<{
   }
 }
 
-// ==================== Execution Factories ====================
+// ==================== Fábricas de Execução ====================
 
-export function createExecutionData(overrides: Partial<{
+export interface ExecutionActionData {
+  tipo: string
+  executadaAt: Date
+  sucesso: boolean
+  erro?: string
+}
+
+export interface ExecutionData {
   id: string
   automacaoId: string
   contatoId: string
   status: 'executando' | 'sucesso' | 'falha' | 'aguardando'
-  acoesExecutadas: unknown[]
-  erro: string
-  proximaAcaoEm: Date
+  acoesExecutadas: ExecutionActionData[]
+  erro?: string
+  proximaAcaoEm?: Date
   createdAt: Date
-}> = {}) {
+}
+
+export function createExecutionData(overrides: Partial<ExecutionData> = {}): ExecutionData {
   return {
     id: overrides.id ?? uuidv4(),
     automacaoId: overrides.automacaoId ?? uuidv4(),
@@ -109,7 +128,7 @@ export function createExecutionData(overrides: Partial<{
   }
 }
 
-// ==================== Mock Builders ====================
+// ==================== Construtores de Mocks ====================
 
 export function createMockRepository() {
   return {
@@ -146,6 +165,9 @@ export function createMockNotification() {
   return {
     createPanelAlert: vi.fn().mockResolvedValue(undefined),
     notifyAdminWhatsApp: vi.fn().mockResolvedValue({ success: true }),
+    getUnreadAlertsCount: vi.fn().mockResolvedValue(0),
+    markAlertAsRead: vi.fn().mockResolvedValue(undefined),
+    getAlerts: vi.fn().mockResolvedValue([]),
   }
 }
 
@@ -166,6 +188,3 @@ export function createMockTemplate() {
     renderForContact: vi.fn().mockImplementation((content: string) => Promise.resolve(content)),
   }
 }
-
-// Import vi from vitest for mock functions
-import { vi } from 'vitest'

@@ -1,6 +1,6 @@
 /**
- * Automation Routes Integration Tests
- * Tests for HTTP endpoints in automation.routes.ts
+ * Testes de Integração das Rotas de Automação
+ * Testa os endpoints HTTP definidos em automation.routes.ts
  */
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid'
 import Fastify, { FastifyInstance } from 'fastify'
 import cookie from '@fastify/cookie'
 
-// Mock the database before any imports
+// Mock do banco de dados antes de qualquer import
 vi.mock('../../db/index.js', () => ({
   db: {
     select: vi.fn(),
@@ -18,42 +18,24 @@ vi.mock('../../db/index.js', () => ({
   },
 }))
 
-// Mock whatsapp-client
+// Mock do cliente WhatsApp
 vi.mock('../../lib/whatsapp-client.js', () => ({
   sendWhatsAppMessage: vi.fn().mockResolvedValue(undefined),
   sendWhatsAppTemplate: vi.fn().mockResolvedValue(undefined),
 }))
 
-// Mock the auth middleware
+// Mock do middleware de autenticação
 vi.mock('../auth/auth.middleware.js', () => ({
   authMiddleware: vi.fn(async (request, _reply) => {
     request.admin = {
       sub: 'test-admin',
       email: 'admin@test.com',
-      nome: 'Test Admin',
+      nome: 'Admin de Teste',
     }
   }),
 }))
 
-// Create mock services - these need to be defined inside the mock factory
-const mockAutomationService = {
-  getAll: vi.fn(),
-  getById: vi.fn(),
-  execute: vi.fn(),
-  update: vi.fn(),
-  delete: vi.fn(),
-  activate: vi.fn(),
-  deactivate: vi.fn(),
-  getExecutions: vi.fn(),
-}
-
-const mockAlertService = {
-  getAlerts: vi.fn(),
-  getUnreadAlertsCount: vi.fn(),
-  markAlertAsRead: vi.fn(),
-}
-
-// Mock the services index - use hoisted mocks
+// Mock dos serviços - usa mocks hoisted
 vi.mock('./index.js', () => {
   return {
     automationService: {
@@ -679,7 +661,8 @@ describe('Automation Routes', () => {
       const mockAlerts = [
         {
           id: uuidv4(),
-          tipo: 'info',
+          automacaoId: uuidv4(),
+          tipo: 'info' as const,
           titulo: 'Test Alert 1',
           mensagem: 'Test message 1',
           lido: false,
@@ -687,7 +670,8 @@ describe('Automation Routes', () => {
         },
         {
           id: uuidv4(),
-          tipo: 'warning',
+          automacaoId: uuidv4(),
+          tipo: 'warning' as const,
           titulo: 'Test Alert 2',
           mensagem: 'Test message 2',
           lido: true,

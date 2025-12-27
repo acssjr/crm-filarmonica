@@ -1,6 +1,6 @@
 /**
- * Testes unitarios para Action Value Object
- * Testa criacao, validacao e funcoes auxiliares de acoes
+ * Testes unitários para Action Value Object
+ * Testa criação, validação e funções auxiliares de ações
  */
 
 import { describe, it, expect } from 'vitest'
@@ -9,7 +9,6 @@ import {
   validateAction,
   isDelayAction,
   getDelayDays,
-  type ActionTipo,
   type ActionConfig,
   type Action,
 } from './action.vo.js'

@@ -1,6 +1,6 @@
 /**
- * Testes unitarios para Trigger Value Object
- * Testa criacao, validacao e matching de triggers
+ * Testes unitários para Trigger Value Object
+ * Testa criação, validação e matching de triggers
  */
 
 import { describe, it, expect } from 'vitest'
@@ -11,7 +11,6 @@ import {
   type TriggerTipo,
   type TriggerConfig,
   type TriggerEvent,
-  type Trigger,
 } from './trigger.vo.js'
 
 describe('Trigger Value Object', () => {

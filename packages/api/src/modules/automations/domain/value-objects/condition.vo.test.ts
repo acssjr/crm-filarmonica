@@ -1,6 +1,6 @@
 /**
- * Testes unitarios para Condition Value Object
- * Testa criacao, validacao e avaliacao de condicoes
+ * Testes unitários para Condition Value Object
+ * Testa criação, validação e avaliação de condições
  */
 
 import { describe, it, expect } from 'vitest'
@@ -10,7 +10,6 @@ import {
   evaluateCondition,
   evaluateAllConditions,
   type ConditionCampo,
-  type ConditionOperador,
   type Condition,
   type ContactData,
 } from './condition.vo.js'

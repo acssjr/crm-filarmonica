@@ -1,13 +1,13 @@
 /**
- * Testes unitarios para Automation Entity
- * Testa criacao, atualizacao, transicoes de estado e persistencia
+ * Testes unitários para Automation Entity
+ * Testa criação, atualização, transições de estado e persistência
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
-import { Automation, type CreateAutomationInput, type UpdateAutomationInput } from './automation.entity.js'
-import type { TriggerTipo, TriggerConfig } from '../value-objects/trigger.vo.js'
+import { Automation, type CreateAutomationInput } from './automation.entity.js'
+import type { TriggerTipo } from '../value-objects/trigger.vo.js'
 import type { ConditionCampo, ConditionOperador } from '../value-objects/condition.vo.js'
-import type { ActionTipo, ActionConfig } from '../value-objects/action.vo.js'
+import type { ActionTipo } from '../value-objects/action.vo.js'
 
 describe('Automation Entity', () => {
   // ==================== Automation.create ====================
