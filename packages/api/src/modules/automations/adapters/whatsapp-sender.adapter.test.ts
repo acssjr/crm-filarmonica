@@ -400,6 +400,14 @@ describe('WhatsAppSenderAdapter', () => {
   })
 
   describe('edge cases', () => {
+    beforeEach(() => {
+      ;(findTemplateById as Mock).mockResolvedValue({
+        id: 'template-123',
+        nome: 'Welcome Template',
+        conteudo: 'Ola {{nome}}, bem-vindo a Filarmonica!',
+      })
+    })
+
     it('should handle undefined variables object', async () => {
       const result = await adapter.sendTemplate('5575988123456', 'template-123', undefined)
 

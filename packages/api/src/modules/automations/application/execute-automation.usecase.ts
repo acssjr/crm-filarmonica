@@ -10,7 +10,7 @@ import { evaluateAllConditions } from '../domain/value-objects/condition.vo.js'
 import { AutomationRepositoryPort, AutomationExecution } from '../domain/ports/automation.repository.port.js'
 import { MessageSenderPort } from '../domain/ports/message-sender.port.js'
 import { NotificationPort } from '../domain/ports/notification.port.js'
-import { ContactPortPort } from '../domain/ports/contact.port.js'
+import { ContactPort } from '../domain/ports/contact.port.js'
 import { TemplatePort } from '../domain/ports/template.port.js'
 import { EventPublisherPort } from '../domain/ports/event-publisher.port.js'
 import {
@@ -24,7 +24,7 @@ export interface ExecuteAutomationDeps {
   repository: AutomationRepositoryPort
   messageSender: MessageSenderPort
   notification: NotificationPort
-  contact: ContactPortPort
+  contact: ContactPort
   template: TemplatePort
   eventPublisher: EventPublisherPort
 }
@@ -42,25 +42,46 @@ export class ExecuteAutomationUseCase {
     const automations = await this.deps.repository.findByTrigger(event.tipo)
 
     for (const automation of automations) {
-      // Check if trigger config matches
-      if (!matchesTrigger(automation.trigger, event)) {
-        continue
-      }
+      try {
+        // Check if trigger config matches
+        if (!matchesTrigger(automation.trigger, event)) {
+          continue
+        }
 
-      // Evaluate conditions
-      const contactData = await this.deps.contact.getContactData(event.contatoId)
-      if (!contactData) {
-        console.log(`[ExecuteAutomation] Contact ${event.contatoId} not found, skipping`)
-        continue
-      }
+        // Rate limiting: Check for recent execution (prevent duplicates/loops)
+        const hasRecent = await this.deps.repository.hasRecentExecution(
+          automation.id,
+          event.contatoId,
+          60 // 60 minute window
+        )
+        if (hasRecent) {
+          console.log(
+            `[ExecuteAutomation] Skipping automation ${automation.id} for contact ${event.contatoId} - recent execution exists`
+          )
+          continue
+        }
 
-      if (!evaluateAllConditions(automation.condicoes, contactData)) {
-        console.log(`[ExecuteAutomation] Conditions not met for automation ${automation.id}`)
-        continue
-      }
+        // Evaluate conditions
+        const contactData = await this.deps.contact.getContactData(event.contatoId)
+        if (!contactData) {
+          console.log(`[ExecuteAutomation] Contact ${event.contatoId} not found, skipping`)
+          continue
+        }
 
-      // Create execution and start
-      await this.executeAutomation(automation, event.contatoId)
+        if (!evaluateAllConditions(automation.condicoes, contactData)) {
+          console.log(`[ExecuteAutomation] Conditions not met for automation ${automation.id}`)
+          continue
+        }
+
+        // Create execution and start
+        await this.executeAutomation(automation, event.contatoId)
+      } catch (error) {
+        // Isolate failures - continue processing other automations
+        console.error(
+          `[ExecuteAutomation] Error processing automation ${automation.id}:`,
+          error
+        )
+      }
     }
   }
 
@@ -149,8 +170,8 @@ export class ExecuteAutomationUseCase {
         return
       }
 
-      // Execute action
-      const result = await this.executeAction(action, execution.contatoId, automation.id)
+      // Execute action with retry for transient failures
+      const result = await this.executeActionWithRetry(action, execution.contatoId, automation.id)
 
       acoesExecutadas.push({
         tipo: action.tipo,
@@ -197,6 +218,67 @@ export class ExecuteAutomationUseCase {
     )
 
     console.log(`[ExecuteAutomation] Execution ${execution.id} completed successfully`)
+  }
+
+  /**
+   * Execute action with retry and exponential backoff
+   */
+  private async executeActionWithRetry(
+    action: Action,
+    contatoId: string,
+    automacaoId: string,
+    maxRetries: number = 3
+  ): Promise<{ success: boolean; error?: string }> {
+    let lastError: string | undefined
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      const result = await this.executeAction(action, contatoId, automacaoId)
+
+      if (result.success) {
+        return result
+      }
+
+      lastError = result.error
+
+      // Don't retry for non-transient errors
+      if (this.isNonRetryableError(result.error)) {
+        console.log(`[ExecuteAutomation] Non-retryable error, not retrying: ${result.error}`)
+        return result
+      }
+
+      if (attempt < maxRetries) {
+        // Exponential backoff: 1s, 2s, 4s
+        const delayMs = Math.pow(2, attempt - 1) * 1000
+        console.log(
+          `[ExecuteAutomation] Action failed (attempt ${attempt}/${maxRetries}), retrying in ${delayMs}ms: ${result.error}`
+        )
+        await this.delay(delayMs)
+      }
+    }
+
+    return { success: false, error: `Falha após ${maxRetries} tentativas: ${lastError}` }
+  }
+
+  /**
+   * Check if error is non-retryable (e.g., validation errors)
+   */
+  private isNonRetryableError(error?: string): boolean {
+    if (!error) return false
+    const nonRetryable = [
+      'não encontrado',
+      'não encontrada',
+      'inválido',
+      'inválida',
+      'não suportada',
+    ]
+    return nonRetryable.some(term => error.toLowerCase().includes(term))
+  }
+
+  /**
+   * Delay helper for retry backoff
+   */
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms))
   }
 
   /**
