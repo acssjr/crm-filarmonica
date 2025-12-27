@@ -18,7 +18,7 @@ export interface ContactDetails {
   }
 }
 
-export interface ContactPortPort {
+export interface ContactPort {
   /**
    * Get contact by ID with tags and interessado data
    */
@@ -46,6 +46,9 @@ export interface ContactPortPort {
 
   /**
    * Find contacts without interaction for X days
+   * @param days Number of days without interaction
+   * @param limit Maximum contacts to return (default: 100)
+   * @param offset Skip first N contacts (default: 0)
    */
-  findContactsWithoutInteraction(days: number): Promise<string[]>
+  findContactsWithoutInteraction(days: number, limit?: number, offset?: number): Promise<string[]>
 }

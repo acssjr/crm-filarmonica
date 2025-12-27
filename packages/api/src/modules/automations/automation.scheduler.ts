@@ -8,7 +8,10 @@ import { redisConnection } from '../../lib/queue.js'
 import { scheduledAutomationsService, executeAutomationService } from './index.js'
 import { TriggerEvent } from './domain/value-objects/trigger.vo.js'
 
+// Configuration
 const QUEUE_NAME = 'automation-processor'
+const SCHEDULED_CHECK_INTERVAL_MS = 5 * 60 * 1000 // 5 minutes
+const WORKER_CONCURRENCY = 5
 
 interface AutomationJobData {
   type: 'trigger' | 'scheduled-check' | 'resume-execution'
@@ -106,7 +109,7 @@ async function processAutomationJob(job: Job<AutomationJobData>): Promise<void> 
 export function startAutomationWorker(): Worker {
   const worker = new Worker<AutomationJobData>(QUEUE_NAME, processAutomationJob, {
     connection: redisConnection,
-    concurrency: 5,
+    concurrency: WORKER_CONCURRENCY,
   })
 
   worker.on('completed', job => {
@@ -146,14 +149,16 @@ export async function schedulePeriodicCheck(): Promise<void> {
     } as AutomationJobData,
     {
       repeat: {
-        every: 5 * 60 * 1000, // Every 5 minutes
+        every: SCHEDULED_CHECK_INTERVAL_MS,
       },
       removeOnComplete: true,
       removeOnFail: false,
     }
   )
 
-  console.log('[AutomationScheduler] Periodic check scheduled (every 5 minutes)')
+  console.log(
+    `[AutomationScheduler] Periodic check scheduled (every ${SCHEDULED_CHECK_INTERVAL_MS / 60000} minutes)`
+  )
 }
 
 /**

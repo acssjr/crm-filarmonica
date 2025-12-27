@@ -68,6 +68,15 @@ const OPERADOR_LABELS: Record<ConditionOperador, string> = {
   nao_contem: 'não contém',
 }
 
+/**
+ * Validate Brazilian phone number format
+ * Expected: 10-15 digits (with or without country code)
+ */
+function isValidPhoneNumber(phone: string): boolean {
+  const cleaned = phone.replace(/\D/g, '')
+  return cleaned.length >= 10 && cleaned.length <= 15
+}
+
 export function Automations() {
   const queryClient = useQueryClient()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -334,6 +343,18 @@ function AutomationModal({ automation, onClose, onSuccess }: AutomationModalProp
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!nome.trim() || acoes.length === 0) return
+
+    // Validate phone numbers in notificar_admin actions
+    for (const action of acoes) {
+      if (action.tipo === 'notificar_admin' && action.config?.adminPhone) {
+        if (!isValidPhoneNumber(action.config.adminPhone)) {
+          alert(
+            'Telefone do admin inválido. Use o formato: 5575999999999 (10-15 dígitos)'
+          )
+          return
+        }
+      }
+    }
 
     const data: CreateAutomacaoRequest = {
       nome: nome.trim(),

@@ -4,14 +4,14 @@
  */
 
 import { AutomationRepositoryPort } from '../domain/ports/automation.repository.port.js'
-import { ContactPortPort } from '../domain/ports/contact.port.js'
+import { ContactPort } from '../domain/ports/contact.port.js'
 import { ExecuteAutomationUseCase } from './execute-automation.usecase.js'
 import { TriggerEvent } from '../domain/value-objects/trigger.vo.js'
 
 export class RunScheduledAutomationsUseCase {
   constructor(
     private repository: AutomationRepositoryPort,
-    private contact: ContactPortPort,
+    private contact: ContactPort,
     private executeAutomation: ExecuteAutomationUseCase
   ) {}
 
@@ -21,29 +21,49 @@ export class RunScheduledAutomationsUseCase {
   async checkTimeBasedAutomations(): Promise<void> {
     console.log('[ScheduledAutomations] Checking time-based automations...')
 
-    // Find active automations with tempo_sem_interacao trigger
-    const automations = await this.repository.findByTrigger('tempo_sem_interacao')
+    try {
+      // Find active automations with tempo_sem_interacao trigger
+      const automations = await this.repository.findByTrigger('tempo_sem_interacao')
 
-    for (const automation of automations) {
-      const dias = automation.trigger.config.dias
-      if (!dias || dias < 1) continue
+      for (const automation of automations) {
+        try {
+          const dias = automation.trigger.config.dias
+          if (!dias || dias < 1) continue
 
-      // Find contacts without interaction for X days
-      const contactIds = await this.contact.findContactsWithoutInteraction(dias)
+          // Find contacts without interaction for X days (paginated to avoid memory issues)
+          const contactIds = await this.contact.findContactsWithoutInteraction(dias, 100)
 
-      console.log(
-        `[ScheduledAutomations] Found ${contactIds.length} contacts without interaction for ${dias} days`
-      )
+          console.log(
+            `[ScheduledAutomations] Found ${contactIds.length} contacts without interaction for ${dias} days`
+          )
 
-      for (const contatoId of contactIds) {
-        const event: TriggerEvent = {
-          tipo: 'tempo_sem_interacao',
-          contatoId,
-          data: { dias },
+          for (const contatoId of contactIds) {
+            try {
+              const event: TriggerEvent = {
+                tipo: 'tempo_sem_interacao',
+                contatoId,
+                data: { dias },
+              }
+
+              await this.executeAutomation.handleTrigger(event)
+            } catch (contactError) {
+              // Isolate contact-level failures
+              console.error(
+                `[ScheduledAutomations] Failed to process contact ${contatoId} for automation ${automation.id}:`,
+                contactError
+              )
+            }
+          }
+        } catch (automationError) {
+          // Isolate automation-level failures - continue with other automations
+          console.error(
+            `[ScheduledAutomations] Failed to process automation ${automation.id}:`,
+            automationError
+          )
         }
-
-        await this.executeAutomation.handleTrigger(event)
       }
+    } catch (error) {
+      console.error('[ScheduledAutomations] Failed to check time-based automations:', error)
     }
   }
 

@@ -54,4 +54,13 @@ export interface AutomationRepositoryPort {
   findPendingExecutions(): Promise<AutomationExecution[]>
   createExecution(input: CreateExecutionInput): Promise<AutomationExecution>
   updateExecution(id: string, input: UpdateExecutionInput): Promise<AutomationExecution | null>
+
+  /**
+   * Check if automation was executed for contact recently (deduplication)
+   * @param automacaoId Automation ID
+   * @param contatoId Contact ID
+   * @param windowMinutes Time window in minutes (default: 60)
+   * @returns true if there's a recent execution
+   */
+  hasRecentExecution(automacaoId: string, contatoId: string, windowMinutes?: number): Promise<boolean>
 }
