@@ -44,7 +44,7 @@ vi.mock('./automation.scheduler.js', () => ({
 }))
 
 import { testDb, pgliteClient } from './setup.js'
-import { contatos, tags, contatoTags, automacoes, automacaoExecucoes, alertas } from '../db/schema.js'
+import { contatos, tags, contatoTags, automacoes, automacaoExecucoes } from '../db/schema.js'
 import { eq } from 'drizzle-orm'
 import { ExecuteAutomationUseCase } from '../modules/automations/application/execute-automation.usecase.js'
 import { AutomationRepository } from '../modules/automations/adapters/automation.repository.js'
@@ -54,14 +54,15 @@ import type { TriggerEvent } from '../modules/automations/domain/value-objects/t
 // Simple adapters for E2E testing
 const mockEventPublisher = {
   publish: vi.fn().mockResolvedValue(undefined),
+  subscribe: vi.fn().mockReturnValue(() => {}),
 }
 
 const mockNotificationAdapter = {
   notifyAdminWhatsApp: vi.fn().mockResolvedValue({ success: true }),
-  createPanelAlert: vi.fn().mockResolvedValue(undefined),
-  findAlerts: vi.fn().mockResolvedValue({ alerts: [], total: 0 }),
-  countUnread: vi.fn().mockResolvedValue(0),
-  markAsRead: vi.fn().mockResolvedValue(undefined),
+  createPanelAlert: vi.fn().mockResolvedValue({ id: 'alert-1' }),
+  getUnreadAlertsCount: vi.fn().mockResolvedValue(0),
+  markAlertAsRead: vi.fn().mockResolvedValue(undefined),
+  getAlerts: vi.fn().mockResolvedValue({ data: [], total: 0 }),
 }
 
 const mockTemplateAdapter = {
@@ -71,6 +72,7 @@ const mockTemplateAdapter = {
 
 const mockMessageSender = {
   sendMessage: vi.fn().mockResolvedValue({ success: true }),
+  sendTemplate: vi.fn().mockResolvedValue({ success: true }),
 }
 
 // Additional SQL for automation tables
@@ -169,7 +171,7 @@ async function createContact(telefone: string, nome?: string) {
 
 // Helper to create tag
 async function createTag(nome: string) {
-  const [tag] = await testDb.insert(tags).values({ nome, cor: '#6366f1' }).returning()
+  const [tag] = await testDb.insert(tags).values({ nome, cor: 'purple' }).returning()
   return tag
 }
 
@@ -613,7 +615,7 @@ describe('Automation E2E - Sistema de Automações', () => {
     it('deve alterar estado da jornada do contato', async () => {
       const contact = await createContact('+5575944433322')
 
-      const automation = await createAutomation({
+      await createAutomation({
         nome: 'Marcar como qualificado',
         triggerTipo: 'novo_contato',
         acoes: [
@@ -646,7 +648,7 @@ describe('Automation E2E - Sistema de Automações', () => {
       const tag = await createTag('novo')
       const contact = await createContact('+5575933322211')
 
-      const automation = await createAutomation({
+      await createAutomation({
         nome: 'Adicionar tag novo',
         triggerTipo: 'novo_contato',
         acoes: [
@@ -670,7 +672,7 @@ describe('Automation E2E - Sistema de Automações', () => {
       // Add tag first
       await testDb.insert(contatoTags).values({ contatoId: contact.id, tagId: tag.id })
 
-      const automation = await createAutomation({
+      await createAutomation({
         nome: 'Remover tag',
         triggerTipo: 'jornada_mudou',
         triggerConfig: { estado: 'qualificado' },
