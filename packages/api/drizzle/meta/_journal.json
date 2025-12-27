@@ -15,6 +15,13 @@
       "when": 1766802256583,
       "tag": "0001_windy_lady_vermin",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1766810680659,
+      "tag": "0002_normal_the_spike",
+      "breakpoints": true
     }
   ]
 }

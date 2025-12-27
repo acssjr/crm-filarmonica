@@ -608,4 +608,152 @@ export const relatorios = {
   },
 }
 
+// ============ Automações ============
+
+export type TriggerTipo =
+  | 'novo_contato'
+  | 'tag_adicionada'
+  | 'tag_removida'
+  | 'jornada_mudou'
+  | 'tempo_sem_interacao'
+  | 'mensagem_recebida'
+
+export type ConditionCampo =
+  | 'tags'
+  | 'estadoJornada'
+  | 'origem'
+  | 'idade'
+  | 'instrumentoDesejado'
+
+export type ConditionOperador = 'igual' | 'diferente' | 'contem' | 'nao_contem'
+
+export type ActionTipo =
+  | 'enviar_mensagem'
+  | 'enviar_template'
+  | 'adicionar_tag'
+  | 'remover_tag'
+  | 'mudar_jornada'
+  | 'notificar_admin'
+  | 'aguardar'
+
+export interface TriggerConfig {
+  tagId?: string
+  estado?: string
+  dias?: number
+  palavraChave?: string
+}
+
+export interface ActionConfig {
+  mensagem?: string
+  templateId?: string
+  tagId?: string
+  estado?: string
+  adminPhone?: string
+  dias?: number
+}
+
+export interface Automacao {
+  id: string
+  nome: string
+  ativo: boolean
+  triggerTipo: TriggerTipo
+  triggerConfig: TriggerConfig
+  condicoes: Array<{
+    campo: ConditionCampo
+    operador: ConditionOperador
+    valor: string | string[]
+  }>
+  acoes: Array<{
+    tipo: ActionTipo
+    config: ActionConfig
+  }>
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AutomacaoExecucao {
+  id: string
+  automacaoId: string
+  contatoId: string
+  status: 'executando' | 'sucesso' | 'falha' | 'aguardando'
+  acoesExecutadas: Array<{
+    tipo: string
+    executadaAt: string
+    sucesso: boolean
+    erro?: string
+  }>
+  erro?: string
+  proximaAcaoEm?: string
+  createdAt: string
+}
+
+export interface Alerta {
+  id: string
+  tipo: 'info' | 'warning' | 'success'
+  titulo: string
+  mensagem: string
+  contatoId?: string
+  automacaoId: string
+  lido: boolean
+  createdAt: string
+}
+
+export interface CreateAutomacaoRequest {
+  nome: string
+  triggerTipo: TriggerTipo
+  triggerConfig?: TriggerConfig
+  condicoes?: Array<{
+    campo: ConditionCampo
+    operador: ConditionOperador
+    valor: string | string[]
+  }>
+  acoes: Array<{
+    tipo: ActionTipo
+    config?: ActionConfig
+  }>
+}
+
+export const automacoes = {
+  list: () => request<Automacao[]>('/automacoes'),
+
+  get: (id: string) => request<Automacao>(`/automacoes/${id}`),
+
+  create: (data: CreateAutomacaoRequest) =>
+    request<Automacao>('/automacoes', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: Partial<CreateAutomacaoRequest>) =>
+    request<Automacao>(`/automacoes/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    request<void>(`/automacoes/${id}`, { method: 'DELETE' }),
+
+  ativar: (id: string) =>
+    request<{ success: boolean }>(`/automacoes/${id}/ativar`, { method: 'POST' }),
+
+  desativar: (id: string) =>
+    request<{ success: boolean }>(`/automacoes/${id}/desativar`, { method: 'POST' }),
+
+  getExecucoes: (id: string) =>
+    request<AutomacaoExecucao[]>(`/automacoes/${id}/execucoes`),
+}
+
+export const alertas = {
+  list: (page = 1, limit = 20) =>
+    request<{
+      data: Alerta[]
+      pagination: { page: number; limit: number; total: number; totalPages: number }
+    }>('/alertas', { params: { page, limit } }),
+
+  count: () => request<{ count: number }>('/alertas/count'),
+
+  markAsRead: (id: string) =>
+    request<{ success: boolean }>(`/alertas/${id}/lido`, { method: 'PATCH' }),
+}
+
 export { ApiError }
