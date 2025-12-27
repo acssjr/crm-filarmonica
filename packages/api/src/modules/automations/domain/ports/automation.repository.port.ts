@@ -54,4 +54,7 @@ export interface AutomationRepositoryPort {
   findPendingExecutions(): Promise<AutomationExecution[]>
   createExecution(input: CreateExecutionInput): Promise<AutomationExecution>
   updateExecution(id: string, input: UpdateExecutionInput): Promise<AutomationExecution | null>
+
+  // Rate limiting
+  hasRecentExecution(automacaoId: string, contatoId: string, windowMinutes?: number): Promise<boolean>
 }

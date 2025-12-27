@@ -113,3 +113,36 @@ Copy `.env.example` to `.env` and fill in:
 - **Commits**: Seguir Conventional Commits (feat, fix, docs, chore, etc.)
 - **PRs**: Título e descrição em português
 - **Sem assinaturas automáticas**: Não incluir "Generated with Claude Code" ou similares
+
+## Comandos Git Proibidos
+
+**NUNCA usar os seguintes comandos:**
+- `git reset --hard` - Destrói histórico e pode sobrescrever trabalho de outros PRs
+- `git push --force` para main/master - Pode sobrescrever commits de outros desenvolvedores
+- `git rebase -i` em branches já publicados - Reescreve histórico público
+
+**Sempre preferir:**
+- `git revert` para desfazer commits (preserva histórico)
+- `git stash` para guardar mudanças temporariamente
+- PRs com revisão para merge (nunca merge direto em main)
+
+## Arquitetura de Testes (Pirâmide de Testes)
+
+Seguir a pirâmide de testes moderna conforme o Guia Técnico:
+
+| Camada | Volume | Foco | Ferramentas |
+|--------|--------|------|-------------|
+| **Unitários** | 60-70% | Lógica de negócio isolada | Vitest + Mocks |
+| **Integração** | 20-25% | API <-> DB, contratos | PGlite, Supertest |
+| **E2E** | 5-10% | Fluxos críticos de usuário | Playwright |
+
+### Princípios:
+- **Unitários**: Rápidos (ms), isolados, alto uso de mocks
+- **Integração**: Validam contratos entre componentes
+- **E2E**: Apenas fluxos críticos (login, checkout, cadastro)
+- **Evitar flaky tests**: Isolamento, cleanup, sem dependência de ordem
+
+### Fluxos Críticos para E2E:
+1. Recebimento de mensagem WhatsApp -> Criação de contato
+2. Disparo de automação por trigger
+3. Fluxo de qualificação de prospecto

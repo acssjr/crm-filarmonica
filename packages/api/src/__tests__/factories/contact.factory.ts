@@ -22,8 +22,11 @@ export const contactDataFactory = Factory.define<ContactData>(() => ({
   ]),
 }))
 
+// Estados da jornada
+type EstadoJornada = 'inicial' | 'boas_vindas' | 'coletando_nome' | 'coletando_idade' | 'coletando_instrumento' | 'verificando_saxofone' | 'coletando_experiencia' | 'coletando_disponibilidade' | 'incompativel' | 'qualificado' | 'atendimento_humano'
+
 // Factory para dados de contato do banco
-interface ContatoDB {
+export interface ContatoDB {
   id: string
   telefone: string
   nome: string | null
@@ -31,7 +34,7 @@ interface ContatoDB {
   origem: 'organico' | 'campanha' | 'indicacao'
   origemCampanha: string | null
   canal: 'whatsapp' | 'instagram' | 'messenger'
-  estadoJornada: string
+  estadoJornada: EstadoJornada
   createdAt: Date
   updatedAt: Date
 }

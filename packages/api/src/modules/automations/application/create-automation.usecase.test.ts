@@ -21,8 +21,14 @@ const createMockRepository = (
   findById: vi.fn().mockResolvedValue(null),
   findAll: vi.fn().mockResolvedValue([]),
   findActive: vi.fn().mockResolvedValue([]),
+  findByTrigger: vi.fn().mockResolvedValue([]),
   delete: vi.fn().mockResolvedValue(true),
+  findExecutionById: vi.fn().mockResolvedValue(null),
   findExecutionsByAutomation: vi.fn().mockResolvedValue([]),
+  findPendingExecutions: vi.fn().mockResolvedValue([]),
+  createExecution: vi.fn().mockResolvedValue({ id: 'exec-1', automacaoId: '', contatoId: '', status: 'executando', acoesExecutadas: [], createdAt: new Date() }),
+  updateExecution: vi.fn().mockResolvedValue(null),
+  hasRecentExecution: vi.fn().mockResolvedValue(false),
   ...overrides,
 })
 
@@ -31,6 +37,7 @@ const createMockEventPublisher = (
   overrides: Partial<EventPublisherPort> = {}
 ): EventPublisherPort => ({
   publish: vi.fn().mockResolvedValue(undefined),
+  subscribe: vi.fn(),
   ...overrides,
 })
 

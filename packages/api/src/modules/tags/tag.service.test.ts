@@ -33,11 +33,14 @@ vi.mock('./tag.repository.js', () => ({
   countContactsByTag: vi.fn(),
 }))
 
+// Tipo de cor válida
+type TagCor = 'gray' | 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink'
+
 // Factory para criar tags de teste
-const createMockTag = (overrides: Partial<{ id: string; nome: string; cor: string; createdAt: Date }> = {}) => ({
+const createMockTag = (overrides: Partial<{ id: string; nome: string; cor: TagCor; createdAt: Date }> = {}) => ({
   id: overrides.id ?? 'tag-123',
   nome: overrides.nome ?? 'Tag Teste',
-  cor: overrides.cor ?? 'gray',
+  cor: overrides.cor ?? 'gray' as TagCor,
   createdAt: overrides.createdAt ?? new Date(),
 })
 
@@ -333,8 +336,8 @@ describe('Tag Service', () => {
         createMockTag({ id: 'tag-2', nome: 'Ativo' }),
       ]
       vi.mocked(repository.countContactsByTag).mockResolvedValue([
-        { tagId: 'tag-1', count: 10 },
-        { tagId: 'tag-2', count: 5 },
+        { tagId: 'tag-1', tagName: 'VIP', count: 10 },
+        { tagId: 'tag-2', tagName: 'Ativo', count: 5 },
       ])
       vi.mocked(repository.findAllTags).mockResolvedValue(tags)
 

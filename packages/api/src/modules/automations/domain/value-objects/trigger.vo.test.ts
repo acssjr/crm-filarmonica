@@ -8,7 +8,6 @@ import {
   createTrigger,
   validateTrigger,
   matchesTrigger,
-  type TriggerTipo,
   type TriggerEvent,
 } from './trigger.vo.js'
 
